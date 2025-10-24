@@ -9,14 +9,14 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 // Full Schemas (as provided)
 const employeeSchema = create({
-  name: { label: "Name", value: "", component: "text", required: true, span: 6 },
+  profilePic: { label: "Profile Pic", value: "", component: "image", onSelect: async (file: File) => URL.createObjectURL(file), span: 2 },
+  name: { label: "Name", value: "", component: "text", required: true, span: 12 },
   email: { label: "Email", value: "", component: "email", required: true, span: 6 },
   department: { label: "Department", value: "", component: "select", options: ["HR", "Engineering", "Sales"], required: true, span: 6 },
   salary: { label: "Salary", value: 0, component: "number", min: 30000, max: 200000, required: true, span: 6 },
   hireDate: { label: "Hire Date", value: "", component: "date", required: true, span: 6 },
   skills: { label: "Skills", value: [], component: "multi-select", options: ["React", "Node", "Python"], span: 12 },
   bio: { label: "Bio", value: "", component: "textarea", required: true, span: 12 },
-  profilePic: { label: "Profile Pic", value: "", component: "image", onSelect: async (file: File) => URL.createObjectURL(file), span: 2 },
   isActive: { label: "Active", value: true, component: "switch", span: 6 },
   interests: { label: "Interests", value: [], component: "tags", placeholder: "Add interests", span: 12 },
   rating: { label: "Rating", value: 5, component: "range", min: 1, max: 10, span: 6 },
@@ -518,13 +518,14 @@ export default function Home() {
       </main>
 
       {/* Examples Section - Stacked Full-Width Forms & Snippets */}
-      <section id="examples" className="py-20 px-4 md:px-8">
+      <section id="examples" className="py-20 px-4 md:px-8 max-w-6xl mx-auto">
         <div className="w-full">
           <h3 className="text-3xl md:text-4xl font-bold mb-8 text-center">Comprehensive Form Examples</h3>
           <p className="text-lg text-gray-400 mb-12 text-center">
             Live demos using all components: text, email, select, radio, checkbox, switch, number, date, range, color, multi-select, tags, image.
           </p>
-          {/* {Object.keys(schemas).map((key) => (
+
+          {Object.keys(schemas).map((key) => (
             <div key={key} className="mb-16 w-full">
               <h4 className="text-2xl font-semibold mb-4 text-center">{titles[key as keyof typeof titles]}</h4>
               <div className="grid grid-cols-1 gap-8 w-full">
@@ -541,14 +542,14 @@ export default function Home() {
                   />
                   {submitted === key && <p className="text-center text-green-500 mt-4">Submitted! Check console.</p>}
                 </div>
-                <div className="w-full max-w-none">
+                {/* <div className="w-full max-w-none">
                   <SyntaxHighlighter language="tsx" style={oneDark} className="rounded-lg !w-full !max-h-[600px] overflow-auto">
                     {fullCodeSnippets[key as keyof typeof fullCodeSnippets]}
                   </SyntaxHighlighter>
-                </div>
+                </div> */}
               </div>
             </div>
-          ))} */}
+          ))}
         </div>
       </section>
 
