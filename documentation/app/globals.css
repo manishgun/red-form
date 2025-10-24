@@ -1,26 +1,39 @@
 @import "tailwindcss";
+@import "red-form/dist/index.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base colors */
+  --color-primary: #a50000;
+  --color-secondary: #ff7300;
+  --color-background: #000000;
+  --color-primary-text: #ffffff;
+
+  --color-text-secondary: color-mix(in srgb, var(--color-text-primary) 95%, black 5%);
+
+  /* Derived colors */
+  --color-primary-dark: color-mix(in srgb, black 10%, var(--color-primary));
+  --color-primary-light: color-mix(in srgb, white 20%, var(--color-primary));
+  --color-secondary-dark: color-mix(in srgb, black 10%, var(--color-secondary));
+  --color-secondary-light: color-mix(in srgb, white 20%, var(--color-secondary));
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  /* Base colors */
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-background: var(--color-background);
+  --color-primary-text: invert(var(--color-background));
+  --color-secondary-text: var(--color-secondary-text);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Derived colors */
+  --color-primary-dark: var(--color-primary);
+  --color-primary-light: var(--color-primary);
+  --color-secondary-dark: var(--color-primary);
+  --color-secondary-light: var(--color-primary);
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: var(--color-text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
