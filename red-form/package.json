@@ -1,0 +1,76 @@
+{
+  "name": "red-form",
+  "version": "1.0.9",
+  "description": "A powerful, type-safe React form library that lets you create dynamic dialog-based forms using schema definitions — inspired by Formik but designed for real-time UI rendering and reusability.",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/index.css",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./dist/index.css": "./dist/index.css"
+  },
+  "files": [
+    "dist",
+    "declarations.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build",
+    "republish": "npm version patch && npm publish"
+  },
+  "keywords": [
+    "react",
+    "form",
+    "formik",
+    "dialog",
+    "typescript",
+    "schema",
+    "form-builder",
+    "dynamic-forms",
+    "form-validation",
+    "react-library",
+    "react-component",
+    "ui",
+    "hooks",
+    "modal-form",
+    "json-form",
+    "custom-fields"
+  ],
+  "author": {
+    "name": "Manish Gun",
+    "email": "mail.cto.manish@gmail.com",
+    "url": "https://manishgun.vercel.app"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manishgun/red-form.git"
+  },
+  "bugs": {
+    "url": "https://github.com/manishgun/red-form/issues"
+  },
+  "homepage": "https://github.com/manishgun/red-form#readme",
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/manishgun"
+  },
+  "type": "module",
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  }
+}
