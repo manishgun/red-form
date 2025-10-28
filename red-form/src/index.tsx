@@ -1,4 +1,4 @@
-import { Errors, FormContextProps, FormInstance, FormProps, InputProps, ModalProps, Schema, Touched, Values } from "./declarations";
+import { Errors, FormContextProps, FormInstance, FormProps, InputProps, ModalProps, Schema, Touched, Values, FormOptions, FormSX } from "./declarations";
 import React, { createContext, Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 
@@ -18,7 +18,7 @@ const FormContext = createContext<FormContextProps>({
   close: () => {}
 });
 
-export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T>) => void): FormInstance<T> {
+export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T>) => void, options?: FormOptions): FormInstance<T> {
   const initialValues = useMemo(() => {
     const values = {} as Values<T>;
     (Object.entries(schema) as [keyof T, T[keyof T]][]).forEach(([key, props]) => {
@@ -39,6 +39,7 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
   // }, [initialValues]);
 
   const setFieldValue = <K extends keyof T>(field: K, value: Values<T>[K]) => {
+    if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
     setValues(prev => ({ ...prev, [field]: value }));
   };
 
@@ -100,16 +101,22 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
 
       if (field.disabled) return fieldErrors;
 
-      if (field.required && (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
-        fieldErrors.push(`${String(field.label)} is required.`);
-      }
-
-      if (field.component === "range") {
-        if ((value as number) > field.max) fieldErrors.push(`${String(field.label)} value is more than max.`);
-        if ((value as number) < field.min) fieldErrors.push(`${String(field.label)} value is less than min.`);
-      }
-
       if (field.validate) field.validate({ field: key as string, props: field, form }).forEach(error => fieldErrors.push(error));
+      else {
+        if (field.required && (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
+          fieldErrors.push(`filed is required.`);
+        }
+
+        if (field.component === "text" || field.component === "textarea") {
+          if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Field Length must be less than ${field.max}.`);
+          if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field Lenght must be more than ${field.min}.`);
+        }
+
+        if (field.component === "range") {
+          if ((value as number) > field.max) fieldErrors.push(`Field value must be less than ${field.max}.`);
+          if ((value as number) < field.min) fieldErrors.push(`Field value must be more than ${field.min}`);
+        }
+      }
 
       if (fieldErrors.length > 0) newErrors[key] = fieldErrors;
     });
@@ -118,8 +125,10 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
     return Object.keys(newErrors).length === 0;
   }, [values, schema]);
 
-  const submit = useCallback(() => {
-    if (validate()) onSubmit(values);
+  const submit = useCallback(async () => {
+    setSubmitting(true);
+    await onSubmit(values);
+    setSubmitting(false);
   }, [validate, onSubmit, values]);
 
   const handleSubmit = useCallback(
@@ -182,10 +191,15 @@ const Form = <T extends Schema>({
   onSubmit,
   onChange,
   onError,
-  onBlur
+  onBlur,
+  sx = {},
+  options
 }: Omit<FormProps<T>, "open" | "close" | "minHeight" | "width" | "height" | "onClose">) => {
-  const form = useForm(schema, values => {
-    if (onSubmit) onSubmit(values);
+  const form = useForm(schema, async values => {
+    if (onSubmit) {
+      if (options && options.validateOn && options.validateOn.includes("submit") && form.validate()) await onSubmit(values);
+      else await onSubmit(values);
+    }
   });
 
   useEffect(() => {
@@ -193,39 +207,49 @@ const Form = <T extends Schema>({
   }, [form.errors]);
   useEffect(() => {
     if (onChange) onChange(form.values);
-    if (!disabled) form.validate();
+    if (!disabled && options && options.validateOn && options.validateOn.includes("change")) form.validate();
   }, [form.values]);
   useEffect(() => {
     if (onBlur) onBlur(form.touched);
   }, [form.touched]);
 
   const disable_submittion = useMemo(() => {
-    return Object.keys(form.errors).length > 0 || form.submitting;
+    return Object.values(form.errors).filter(val => val).length > 0 || form.submitting;
   }, [form.errors, form.submitting]);
 
   return (
     <div
-      className="red-form-conteiner"
+      className="red-form-container"
       onMouseDown={() => {
         form.setFieldActive(undefined);
       }}
+      style={{ ...sx.conteiner }}
     >
-      {title && <div className="red-form-title">{title}</div>}
-      {description && <p className="red-form-description">{description}</p>}
-      <form className="red-form" onSubmit={form.handleSubmit}>
+      {title && (
+        <div className="red-form-title" style={{ ...sx.title }}>
+          {title}
+        </div>
+      )}
+      {description && (
+        <p className="red-form-description" style={{ ...sx.description }}>
+          {description}
+        </p>
+      )}
+      <form className="red-form" onSubmit={form.handleSubmit} style={{ ...sx.form }}>
         {(Object.entries(schema) as [string, T[keyof T]][]).map(([field, props]) => {
           props.disabled = Boolean(disabled) || Boolean(props.disabled);
-          return <InputContainer key={field as string} field={field} props={props} form={form} />;
+          return <InputContainer key={field as string} field={field} props={props} form={form} sx={sx} />;
         })}
         {disabled && <div style={{ width: "100%", height: "100%", position: "absolute", cursor: "default", pointerEvents: "all", zIndex: 999, inset: 0 }}></div>}
         {onSubmit && !disabled && (
-          <div className="red-form-action-area">
+          <div className="red-form-action-area" style={{ ...sx.actionArea }}>
             <button
               className={"red-form-button red-form-reset-button"}
               onClick={e => {
                 e.preventDefault();
                 form.resetForm();
               }}
+              style={{ ...sx.resetButton }}
             >
               Reset
             </button>
@@ -233,6 +257,7 @@ const Form = <T extends Schema>({
               disabled={disable_submittion}
               className={`red-form-button ${disable_submittion ? "red-form-submit-button-disabled red-form-error-shadow" : "red-form-submit-button"}`}
               type="submit"
+              style={{ ...sx.submitButton }}
             >
               Submit
             </button>
@@ -243,16 +268,16 @@ const Form = <T extends Schema>({
   );
 };
 
-const InputContainer = <T extends Schema, K extends keyof T>({ field, props, form }: { field: string; props: T[K]; form: FormInstance<T> }) => {
+const InputContainer = <T extends Schema, K extends keyof T>({ field, props, form, sx }: { field: string; props: T[K]; form: FormInstance<T>; sx: FormSX }) => {
   const error = form.errors[field];
   const style = useMemo(() => {
-    return { gridColumn: props.span ? `span ${props.span}` : undefined, cursor: props.disabled ? "not-allowed" : undefined };
+    return { gridColumn: props.span ? `span ${props.span}` : undefined, cursor: props.disabled ? "not-allowed" : undefined, ...sx.inputContainer };
   }, [props.span, props.disabled]);
 
   if (props.component === "custom" && !props.inputBase) {
     return (
-      <div style={style} className={`${error ? "red-form-error" : ""}`}>
-        <CustomField {...{ field, props, form, error }} />
+      <div style={{ ...style }} className={`${error ? "red-form-error" : ""}`}>
+        <CustomField {...{ field, props, form, error, sx }} />
       </div>
     );
   }
@@ -261,26 +286,40 @@ const InputContainer = <T extends Schema, K extends keyof T>({ field, props, for
 
   return (
     <div className={`red-form-input-container ${error ? "red-form-error" : ""}`} style={style}>
-      <div className="red-form-input-label-container">
-        <label className={`red-form-input-label ${error ? "red-form-error" : ""}`} htmlFor={field as string}>
-          {props.label} {props.required && "*"}
+      <div className="red-form-input-label-container" style={{ ...sx.inputLabelContainer }}>
+        <label className={`red-form-input-label ${error ? "red-form-error" : ""}`} htmlFor={field as string} style={{ ...sx.inputLabel }}>
+          {props.label} <span className="red-form-error">{props.required && "*"}</span>
         </label>
         {props.information && (
-          <div className="red-form-tooltip-wrapper">
-            <div className="red-form-info-icon">i</div>
-            <div className="red-form-tooltip">{props.information}</div>
+          <div className="red-form-tooltip-container" style={{ ...sx.tooltipContainer }}>
+            <div className="red-form-info-icon" style={{ ...sx.tooltipInfoIcon }}>
+              i
+            </div>
+            <div className="red-form-tooltip" style={{ ...sx.tooltip }}>
+              {props.information}
+            </div>
           </div>
         )}
       </div>
-      <Input field={field} props={props} form={form} error={error} />
+      <Input field={field} props={props} form={form} error={error} sx={sx} />
       {error && !props.disabled ? (
-        <ul className={`red-form-error-list ${error ? "red-form-error" : ""}`}>
+        <ul className={`red-form-error-list ${error ? "red-form-error" : ""}`} style={{ ...sx.errorList }}>
           {error.map(content => {
-            return <li key={content}>{content}</li>;
+            return (
+              <li key={content} style={{ ...sx.errorItem }}>
+                {content}
+              </li>
+            );
           })}
         </ul>
       ) : (
-        <>{props.helperText !== undefined && <p className={`red-form-helper-text ${error ? "red-form-error" : ""}`}>{props.helperText}</p>}</>
+        <>
+          {props.helperText !== undefined && (
+            <p className={`red-form-helper-text ${error ? "red-form-error" : ""}`} style={{ ...sx.helperText }}>
+              {props.helperText}
+            </p>
+          )}
+        </>
       )}
     </div>
   );
@@ -302,10 +341,13 @@ const Input = <T extends Schema, K extends keyof T>(properties: InputProps<T, K>
 };
 
 const InputBase = <T extends Schema, K extends keyof T>(properties: InputProps<T, K>) => {
-  console.log(properties.field, properties.props.disabled);
+  // console.log(properties.field, properties.props.disabled);
 
   return (
-    <div className={`red-form-input-base ${properties.props.disabled ? "" : `${properties.error ? "red-form-error red-form-error-shadow" : "red-form-input-base-shadow"}`}`}>
+    <div
+      className={`red-form-input-base ${properties.props.disabled ? "" : `${properties.error ? "red-form-error red-form-error-shadow" : "red-form-input-base-shadow"}`}`}
+      style={{ ...properties.sx.inputBase }}
+    >
       {/* @ts-ignore */}
       {properties.props.adorment && properties.props.adorment.start && <>{properties.props.adorment.start}</>}
       <InputField {...properties} />
@@ -359,9 +401,9 @@ const InputField = <T extends Schema, K extends keyof T>(properties: InputProps<
   }
 };
 
-const CustomField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
+const CustomField = <T extends Schema, K extends keyof T>({ field, props, form, error, sx }: InputProps<T, K>) => {
   if (props.component !== "custom") return null;
-  return <Fragment>{props.render({ field, props, form, error })}</Fragment>;
+  return <Fragment>{props.render({ field, props, form, error, sx })}</Fragment>;
 };
 
 const TextField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
@@ -392,7 +434,7 @@ const PasswordField = <T extends Schema, K extends keyof T>({ field, props, form
 
 const NumberField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "number") return null;
-  return <input type="number" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  return <input type="number" min={props.min} max={props.max} className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
 };
 
 const DateField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {

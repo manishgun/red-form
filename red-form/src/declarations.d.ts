@@ -1,4 +1,4 @@
-import { Dispatch, ReactNode, SetStateAction } from "react";
+import { CSSProperties, Dispatch, ReactNode, SetStateAction } from "react";
 
 export type ModalProps = {
   isOpen: boolean;
@@ -16,7 +16,7 @@ export type Adorment = {
 
 export type Option = string | { label: string; value: string };
 
-export type InputProps<T extends Schema, K extends keyof T> = { field: string; props: T[K]; form: FormInstance<T>; error: string[] | undefined };
+export type InputProps<T extends Schema, K extends keyof T> = { field: string; props: T[K]; form: FormInstance<T>; error: string[] | undefined; sx: FormSX };
 
 export type BaseField = {
   label: string;
@@ -228,10 +228,36 @@ export type Values<T extends Schema> = {
   [K in keyof T]: T[K]["required"] extends true ? T[K]["value"] : T[K]["value"] | undefined;
 };
 
+type ValidateOnType = ("submit" | "change")[];
+
+export type FormSX = {
+  conteiner?: CSSProperties;
+  title?: CSSProperties;
+  description?: CSSProperties;
+  form?: CSSProperties;
+  actionArea?: CSSProperties;
+  resetButton?: CSSProperties;
+  submitButton?: CSSProperties;
+  inputContainer?: CSSProperties;
+  inputLabelContainer?: CSSProperties;
+  inputLabel?: CSSProperties;
+  tooltipContainer?: CSSProperties;
+  tooltipInfoIcon?: CSSProperties;
+  tooltip?: CSSProperties;
+  errorList?: CSSProperties;
+  errorItem?: CSSProperties;
+  helperText?: CSSProperties;
+  inputBase?: CSSProperties;
+};
+
 export type FormProps<T extends Schema> = {
   // FORM FIELDS
   title?: string | ReactNode;
   description?: ReactNode;
+  options?: {
+    validateOn?: FormOptions["validateOn"];
+  };
+  sx?: FormSX;
   onSubmit?: (values: Values<T>) => void | Promise<void>;
   onChange?: (values: Values<T>) => void;
   onError?: (values: Errors<T>) => void;
@@ -253,6 +279,10 @@ export type Touched<T extends Schema> = Partial<Record<keyof T, boolean>>;
 export type FormContextProps = {
   open: <T extends Schema>(props: FormProps<T>) => number;
   close: (index: number) => void;
+};
+
+export type FormOptions = {
+  validateOn?: ValidateOnType;
 };
 
 export interface FormInstance<T extends Schema> {

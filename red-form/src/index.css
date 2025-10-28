@@ -83,7 +83,7 @@
   position: relative;
 }
 
-.red-form-tooltip-wrapper {
+.red-form-tooltip-container {
   position: relative;
 }
 
@@ -108,7 +108,7 @@
   box-shadow: 0 1px 12px var(--red-form-color-text);
 }
 
-.red-form-tooltip-wrapper:hover .red-form-tooltip {
+.red-form-tooltip-container:hover .red-form-tooltip {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(-55%);
