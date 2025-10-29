@@ -1,0 +1,19 @@
+import Form, { create } from "red-form";
+import "red-form/dist/index.css";
+
+const schema = create({
+    name: { label: "Name", component: "text", value: "" }, 
+    group: { label: "Group", component: "select", options: ["A", "B", "C"], value: "", }, 
+    code: { label: "code", component: "text", value: "" }, 
+    measure: { label: "measure", component: "text", value: "" }, 
+    type: { label: "type", component: "select", options: ["A", "B", "C"], value: "" }, 
+    category: { label: "category", component: "select", options: ["A", "B", "C"], value: "" }, 
+    source: { label: "source", component: "text", value: "" }, 
+    branching: { label: "branching", component: "switch", value: true }, 
+    comment: { label: "source", component: "text", value: "" },
+  });
+  
+<Form schema={schema} title={`Create Survey`} description="please fill all the details." 
+  onSubmit={(values) => {
+    console.log(values);
+}}/>

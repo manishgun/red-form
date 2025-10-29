@@ -14,7 +14,7 @@ export type Adorment = {
   end: ReactNode | undefined;
 };
 
-export type Option = string | { label: string; value: string };
+export type Option = string | { label: string; value: string | number };
 
 export type InputProps<T extends Schema, K extends keyof T> = { field: string; props: T[K]; form: FormInstance<T>; error: string[] | undefined; sx: FormSX };
 
@@ -48,6 +48,7 @@ export type SearchFieldProps = BaseField & {
   component: "search";
   value: string;
   autoFill?: AutoFillField;
+  options: Option[];
   adorment?: Adorment;
 };
 
@@ -228,7 +229,7 @@ export type Values<T extends Schema> = {
   [K in keyof T]: T[K]["required"] extends true ? T[K]["value"] : T[K]["value"] | undefined;
 };
 
-type ValidateOnType = ("submit" | "change")[];
+type ValidateOnType = ("submit" | "change" | "blur" | "active")[];
 
 export type FormSX = {
   conteiner?: CSSProperties;
@@ -258,10 +259,10 @@ export type FormProps<T extends Schema> = {
     validateOn?: FormOptions["validateOn"];
   };
   sx?: FormSX;
-  onSubmit?: (values: Values<T>) => void | Promise<void>;
-  onChange?: (values: Values<T>) => void;
-  onError?: (values: Errors<T>) => void;
-  onBlur?: (values: Touched<T>) => void;
+  onSubmit?: (values: Values<T>, form: FormInstance<T>) => void | Promise<void>;
+  onChange?: (values: Values<T>, form: FormInstance<T>) => void;
+  onError?: (values: Errors<T>, form: FormInstance<T>) => void;
+  onBlur?: (values: Touched<T>, form: FormInstance<T>) => void;
   disabled?: boolean;
   schema: T;
   // DIALOG FIELDS
@@ -302,7 +303,7 @@ export interface FormInstance<T extends Schema> {
   setTouched: Dispatch<SetStateAction<Partial<Record<keyof T, boolean>>>>;
   handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
 
-  activeField: string | undefined;
+  activeField: keyof T | undefined;
   setFieldActive: <K extends keyof T>(field: K | undefined) => void;
   handleFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
 

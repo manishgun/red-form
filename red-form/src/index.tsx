@@ -13,12 +13,24 @@ import "./index.css";
 
 // injectCss(new URL("./index.css", import.meta.url).toString());
 
+const isPromise = (result: any) => {
+  if (typeof result === "object" && typeof result.then === "function" && typeof result.catch === "function" && typeof result.finally === "function") return true;
+  else return false;
+};
+
 const FormContext = createContext<FormContextProps>({
   open: () => 0,
   close: () => {}
 });
 
-export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T>) => void, options?: FormOptions): FormInstance<T> {
+export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T>) => void | Promise<void>, options?: FormOptions): FormInstance<T> {
+  const ref = useRef<HTMLInputElement>(null);
+  const [values, setValues] = useState<Values<T>>({} as Values<T>);
+  const [errors, setErrors] = useState<Errors<T>>({});
+  const [touched, setTouched] = useState<Touched<T>>({});
+  const [activeField, set_active_field] = useState<keyof T>();
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
   const initialValues = useMemo(() => {
     const values = {} as Values<T>;
     (Object.entries(schema) as [keyof T, T[keyof T]][]).forEach(([key, props]) => {
@@ -27,16 +39,13 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
     return values;
   }, [schema]);
 
-  const ref = useRef<HTMLInputElement>(null);
-  const [values, setValues] = useState<Values<T>>(initialValues);
-  const [errors, setErrors] = useState<Errors<T>>({});
-  const [touched, setTouched] = useState<Touched<T>>({});
-  const [activeField, set_active_field] = useState<string | undefined>();
-  const [submitting, setSubmitting] = useState<boolean>(false);
-
-  // useEffect(() => {
-  //   setValues(initialValues);
-  // }, [initialValues]);
+  useEffect(() => {
+    const val = { ...values };
+    (Object.keys(initialValues) as (keyof T)[]).forEach(key => {
+      if (val[key] === "" || val[key] === undefined) val[key] = initialValues[key];
+    });
+    setValues(val);
+  }, [initialValues]);
 
   const setFieldValue = <K extends keyof T>(field: K, value: Values<T>[K]) => {
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -51,6 +60,7 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
   };
 
   const setFieldTouched = <K extends keyof T>(field: K, value: boolean) => {
+    if (options && options.validateOn && options.validateOn.includes("blur") && !options.validateOn.includes("change")) validateField(field, true);
     setTouched(prev => ({ ...prev, [field]: value }));
   };
 
@@ -60,7 +70,7 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
 
   const handleBlur = <K extends keyof T>(event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (event.target.name) {
-      setTouched(prev => ({ ...prev, [event.target.name as K]: true }));
+      setFieldTouched(event.target.name, true);
       set_active_field(undefined);
       ref.current = null;
     }
@@ -78,8 +88,8 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
     name: key,
     id: key,
     // value: typeof values[key] === "number" ? values[key] : values[key] ? values[key].toString() : "",
-    value: values[key],
-    required: schema[key]["required"] ? true : false,
+    value: values[key] !== undefined || values[key] !== null ? values[key] : "",
+    required: false, //schema[key]["required"] ? true : false,
     disabled: schema[key]["disabled"] ? true : false,
     placeholder: schema[key]["placeholder"],
     autoComplete: schema[key]["component"] === "text" ? (schema[key]["autoFill"] ? schema[key]["autoFill"] : undefined) : undefined,
@@ -92,43 +102,57 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
     ref: key === activeField ? ref : undefined
   });
 
-  const validate = useCallback(() => {
-    const newErrors: Errors<T> = {};
+  const validateField = <K extends keyof T>(key: K, updateState: boolean): string[] => {
+    const value = values[key];
+    const field = schema[key];
+    const fieldErrors: string[] = [];
 
-    (Object.entries(schema) as [keyof T, T[keyof T]][]).forEach(([key, field]) => {
-      const value = values[key];
-      const fieldErrors: string[] = [];
-
-      if (field.disabled) return fieldErrors;
-
-      if (field.validate) field.validate({ field: key as string, props: field, form }).forEach(error => fieldErrors.push(error));
-      else {
-        if (field.required && (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
-          fieldErrors.push(`filed is required.`);
-        }
-
-        if (field.component === "text" || field.component === "textarea") {
-          if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Field Length must be less than ${field.max}.`);
-          if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field Lenght must be more than ${field.min}.`);
-        }
-
-        if (field.component === "range") {
-          if ((value as number) > field.max) fieldErrors.push(`Field value must be less than ${field.max}.`);
-          if ((value as number) < field.min) fieldErrors.push(`Field value must be more than ${field.min}`);
-        }
+    if (field.disabled) return fieldErrors;
+    if (field.validate) field.validate({ field: key as string, props: field, form }).forEach(error => fieldErrors.push(error));
+    else {
+      if (field.required && (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
+        fieldErrors.push(`filed is required.`);
       }
 
+      if (field.component === "text" || field.component === "textarea") {
+        if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Field Length must be less than ${field.max}.`);
+        if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field Lenght must be more than ${field.min}.`);
+      }
+
+      if (field.component === "range") {
+        if ((value as number) > field.max) fieldErrors.push(`Field value must be less than ${field.max}.`);
+        if ((value as number) < field.min) fieldErrors.push(`Field value must be more than ${field.min}`);
+      }
+    }
+
+    if (updateState && fieldErrors.length > 0) setErrors({ ...errors, [key]: fieldErrors });
+
+    return fieldErrors;
+  };
+
+  const validate = useCallback(() => {
+    const newErrors: Errors<T> = {};
+    (Object.keys(schema) as (keyof T)[]).forEach(key => {
+      const fieldErrors = validateField(key, false);
       if (fieldErrors.length > 0) newErrors[key] = fieldErrors;
     });
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [values, schema]);
 
   const submit = useCallback(async () => {
-    setSubmitting(true);
-    await onSubmit(values);
-    setSubmitting(false);
+    let result: any;
+
+    if (options && options.validateOn && options.validateOn.includes("submit") && form.validate()) result = onSubmit(values);
+    else result = onSubmit(values);
+
+    if (isPromise(result)) {
+      setSubmitting(true);
+      // @ts-ignore
+      result.finally(() => {
+        setSubmitting(false);
+      });
+    }
   }, [validate, onSubmit, values]);
 
   const handleSubmit = useCallback(
@@ -145,6 +169,10 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
     setTouched({});
     setErrors({});
   }, [initialValues]);
+
+  useEffect(() => {
+    if (options && options.validateOn && options.validateOn.includes("active") && !options.validateOn.includes("change") && activeField) validateField(activeField, true);
+  }, [values, activeField]);
 
   const form = {
     submitting,
@@ -195,22 +223,25 @@ const Form = <T extends Schema>({
   sx = {},
   options
 }: Omit<FormProps<T>, "open" | "close" | "minHeight" | "width" | "height" | "onClose">) => {
-  const form = useForm(schema, async values => {
-    if (onSubmit) {
-      if (options && options.validateOn && options.validateOn.includes("submit") && form.validate()) await onSubmit(values);
-      else await onSubmit(values);
-    }
-  });
+  const form = useForm(
+    schema,
+    async values => {
+      if (onSubmit) {
+        await onSubmit(values, form);
+      }
+    },
+    options
+  );
 
   useEffect(() => {
-    if (onError) onError(form.errors);
+    if (onError) onError(form.errors, form);
   }, [form.errors]);
   useEffect(() => {
-    if (onChange) onChange(form.values);
+    if (onChange) onChange(form.values, form);
     if (!disabled && options && options.validateOn && options.validateOn.includes("change")) form.validate();
   }, [form.values]);
   useEffect(() => {
-    if (onBlur) onBlur(form.touched);
+    if (onBlur) onBlur(form.touched, form);
   }, [form.touched]);
 
   const disable_submittion = useMemo(() => {
@@ -409,11 +440,6 @@ const CustomField = <T extends Schema, K extends keyof T>({ field, props, form, 
 const TextField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "text") return null;
   return <input type="text" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
-};
-
-const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
-  if (props.component !== "search") return null;
-  return <input type="search" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
 };
 
 const EmailField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
@@ -619,6 +645,135 @@ const SwitchField = <T extends Schema, K extends keyof T>({ field, props, form, 
         <span className="red-form-slider"></span>
       </span>
     </label>
+  );
+};
+
+const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
+  if (props.component !== "search") return null;
+  const [selected_index, set_selected_index] = useState(0);
+  const [input, setInput] = useState("");
+  const [show_suggestions, set_show_suggestions] = useState(false);
+
+  const value = form.values[field] as number | string | null;
+
+  useEffect(() => {
+    if ((value !== null || value !== "") && input === "") {
+      const match = props.options.find(option => {
+        if (typeof option === "string") {
+          return option === value;
+        } else {
+          return option.value === value;
+        }
+      });
+      if (match) {
+        if (typeof match === "string") {
+          setInput(match);
+        } else {
+          setInput(match.label);
+        }
+      }
+    }
+  }, [value]);
+
+  useEffect(() => {
+    const match = props.options.find(option => {
+      if (typeof option === "string") {
+        return option === input;
+      } else {
+        return option.label === input;
+      }
+    });
+
+    if (match) {
+      if (typeof match === "string") {
+        if (match !== value) {
+          form.setFieldValue(field, match);
+        }
+      } else {
+        if (match.value !== value) {
+          form.setFieldValue(field, match.value);
+        }
+      }
+      set_show_suggestions(false);
+    } else if (value !== "") form.setFieldValue(field, "");
+  }, [input, props.options, value]);
+
+  const filterd = useMemo(() => {
+    return props.options
+      .filter(option => {
+        const value = input.toLowerCase();
+        if (typeof option === "string") {
+          return option !== input && option.toLowerCase().includes(value);
+        } else {
+          return option.label !== input && option.label.toLowerCase().includes(value);
+        }
+      })
+      .slice(0, 10);
+  }, [input, form.values[field]]);
+
+  const show = Boolean(form.activeField === field && filterd.length > 0 && show_suggestions);
+
+  return (
+    <Fragment>
+      <input
+        type="search"
+        {...form.getFieldProps(field)}
+        autoComplete="off"
+        placeholder={props.placeholder || `Select ${props.label}`}
+        value={input}
+        className={`red-form-input ${error ? "red-form-error" : ""}`}
+        onKeyDown={e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (filterd[selected_index]) {
+              if (typeof filterd[selected_index] === "string") {
+                setInput(filterd[selected_index]);
+              } else {
+                setInput(filterd[selected_index]["label"]);
+              }
+            }
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            if (filterd.length - 1 === selected_index) set_selected_index(0);
+            else set_selected_index(selected_index + 1);
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            if (selected_index === 0) set_selected_index(filterd.length - 1);
+            else set_selected_index(selected_index - 1);
+          }
+        }}
+        onChange={e => {
+          setInput(e.target.value);
+          if (show_suggestions === false) set_show_suggestions(true);
+        }}
+        onClick={() => {
+          set_show_suggestions(true);
+        }}
+      />
+      {form.activeField !== field && <div className="red-form-search-field-nav-arrow">⏷</div>}
+      {show && (
+        <ul className="red-form-search-field-suggestion-container" style={{}}>
+          {filterd.map((item, index) => {
+            const label = typeof item === "string" ? item : item.label;
+            const value = typeof item === "string" ? item : item.value;
+            return (
+              <li
+                key={value}
+                className={`suggestion-item ${selected_index === index ? "active" : ""}`}
+                onMouseDown={e => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setInput(label);
+                  // form.setFieldValue(field, value);
+                }}
+              >
+                {label}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Fragment>
   );
 };
 
