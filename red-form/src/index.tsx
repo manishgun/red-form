@@ -40,15 +40,18 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
   }, [schema]);
 
   useEffect(() => {
-    const val = { ...values };
-    (Object.keys(initialValues) as (keyof T)[]).forEach(key => {
-      if (val[key] === "" || val[key] === undefined) val[key] = initialValues[key];
-    });
-    setValues(val);
+    if ((options && options.reInitialization === true) || Object.keys(values).length === 0) {
+      const val = { ...values };
+      (Object.keys(initialValues) as (keyof T)[]).forEach(key => {
+        if (touched[key] !== true) val[key] = initialValues[key];
+      });
+      setValues(val);
+    }
   }, [initialValues]);
 
   const setFieldValue = <K extends keyof T>(field: K, value: Values<T>[K]) => {
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+    // if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+    if (!touched[field] && value !== "") setFieldTouched(field, true);
     setValues(prev => ({ ...prev, [field]: value }));
   };
 
@@ -88,7 +91,7 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
     name: key,
     id: key,
     // value: typeof values[key] === "number" ? values[key] : values[key] ? values[key].toString() : "",
-    value: values[key] !== undefined || values[key] !== null ? values[key] : "",
+    value: values[key] === undefined || values[key] === null ? "" : values[key],
     required: false, //schema[key]["required"] ? true : false,
     disabled: schema[key]["disabled"] ? true : false,
     placeholder: schema[key]["placeholder"],
@@ -112,25 +115,29 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
     else {
       if (field.required && (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
         fieldErrors.push(`filed is required.`);
-      }
+      } else {
+        if (field.component === "text" || field.component === "textarea") {
+          if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Field Length must be less than ${field.max}.`);
+          if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field Lenght must be more than ${field.min}.`);
+        }
 
-      if (field.component === "text" || field.component === "textarea") {
-        if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Field Length must be less than ${field.max}.`);
-        if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field Lenght must be more than ${field.min}.`);
-      }
-
-      if (field.component === "range") {
-        if ((value as number) > field.max) fieldErrors.push(`Field value must be less than ${field.max}.`);
-        if ((value as number) < field.min) fieldErrors.push(`Field value must be more than ${field.min}`);
+        if (field.component === "range") {
+          if ((value as number) > field.max) fieldErrors.push(`Field value must be less than ${field.max}.`);
+          if ((value as number) < field.min) fieldErrors.push(`Field value must be more than ${field.min}`);
+        }
       }
     }
 
-    if (updateState && fieldErrors.length > 0) setErrors({ ...errors, [key]: fieldErrors });
+    if (updateState) {
+      if (fieldErrors.length > 0) setErrors({ ...errors, [key]: fieldErrors });
+      else setErrors({ ...errors, [key]: undefined });
+    }
 
     return fieldErrors;
   };
 
   const validate = useCallback(() => {
+    if (options && options.onValidate && typeof options.onValidate === "function") options.onValidate();
     const newErrors: Errors<T> = {};
     (Object.keys(schema) as (keyof T)[]).forEach(key => {
       const fieldErrors = validateField(key, false);
@@ -266,7 +273,7 @@ const Form = <T extends Schema>({
           {description}
         </p>
       )}
-      <form className="red-form" onSubmit={form.handleSubmit} style={{ ...sx.form }}>
+      <div className="red-form" style={{ ...sx.form }}>
         {(Object.entries(schema) as [string, T[keyof T]][]).map(([field, props]) => {
           props.disabled = Boolean(disabled) || Boolean(props.disabled);
           return <InputContainer key={field as string} field={field} props={props} form={form} sx={sx} />;
@@ -285,6 +292,9 @@ const Form = <T extends Schema>({
               Reset
             </button>
             <button
+              onClick={() => {
+                form.submit();
+              }}
               disabled={disable_submittion}
               className={`red-form-button ${disable_submittion ? "red-form-submit-button-disabled red-form-error-shadow" : "red-form-submit-button"}`}
               type="submit"
@@ -294,7 +304,7 @@ const Form = <T extends Schema>({
             </button>
           </div>
         )}
-      </form>
+      </div>
     </div>
   );
 };
@@ -460,7 +470,9 @@ const PasswordField = <T extends Schema, K extends keyof T>({ field, props, form
 
 const NumberField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "number") return null;
-  return <input type="number" min={props.min} max={props.max} className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  return (
+    <input type="number" min={props.min} max={props.max} step={props.step} className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />
+  );
 };
 
 const DateField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
@@ -527,7 +539,7 @@ const SelectField = <T extends Schema, K extends keyof T>({ field, props, form, 
   return (
     <select
       id={field as string}
-      value={form.values[field] as string}
+      value={(form.values[field] as string) || ""}
       onChange={e => form.setFieldValue(field, e.target.value)}
       className={`red-form-select-field ${props.disabled ? "red-form-select-field-disabled" : ""} ${error ? "red-form-error" : ""}`}
     >
@@ -611,7 +623,7 @@ const RadioField = <T extends Schema, K extends keyof T>({ field, props, form, e
               className="red-form-radio-field-input"
               name={field as string}
               checked={value === form["values"][field]}
-              value={value}
+              value={value || ""}
               onClick={toggle}
               disabled={props.disabled}
               onKeyUp={e => {
@@ -635,7 +647,8 @@ const SwitchField = <T extends Schema, K extends keyof T>({ field, props, form, 
       <input
         type="checkbox"
         {...form.getFieldProps(field as string)}
-        checked={form.values[field] as boolean}
+        value={""}
+        checked={Boolean(form.values[field])}
         disabled={props.disabled}
         onChange={e => {
           form.setFieldValue(field, e.target.checked);
@@ -656,7 +669,7 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
 
   const value = form.values[field] as number | string | null;
 
-  useEffect(() => {
+  const reInitialization = () => {
     if ((value !== null || value !== "") && input === "") {
       const match = props.options.find(option => {
         if (typeof option === "string") {
@@ -673,9 +686,9 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
         }
       }
     }
-  }, [value]);
+  };
 
-  useEffect(() => {
+  const exactMatch = () => {
     const match = props.options.find(option => {
       if (typeof option === "string") {
         return option === input;
@@ -696,7 +709,17 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
       }
       set_show_suggestions(false);
     } else if (value !== "") form.setFieldValue(field, "");
-  }, [input, props.options, value]);
+  };
+
+  useEffect(reInitialization, [value]);
+
+  useEffect(() => {
+    exactMatch();
+  }, [input]);
+
+  // useEffect(() => {
+  //   exactMatch();
+  // }, [props.options]);
 
   const filterd = useMemo(() => {
     return props.options
@@ -709,7 +732,7 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
         }
       })
       .slice(0, 10);
-  }, [input, form.values[field]]);
+  }, [input, form.values[field], props.options]);
 
   const show = Boolean(form.activeField === field && filterd.length > 0 && show_suggestions);
 
@@ -748,6 +771,7 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
         }}
         onClick={() => {
           set_show_suggestions(true);
+          if (!form.touched[field]) form.setFieldTouched(field, true);
         }}
       />
       {form.activeField !== field && <div className="red-form-search-field-nav-arrow">⏷</div>}
@@ -970,7 +994,7 @@ const ImageField = <T extends Schema, K extends keyof T>({ field, props, form, e
             type="file"
             {...form.getFieldProps(field as string)}
             disabled={props.disabled}
-            value={undefined}
+            value={""}
             onChange={e => {
               if (e.target.files && e.target.files.length === 1) {
                 const file = e.target.files.item(0);

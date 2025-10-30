@@ -257,6 +257,8 @@ export type FormProps<T extends Schema> = {
   description?: ReactNode;
   options?: {
     validateOn?: FormOptions["validateOn"];
+    reInitialization?: FormOptions["reInitialization"];
+    onValidate?: FormOptions["onValidate"];
   };
   sx?: FormSX;
   onSubmit?: (values: Values<T>, form: FormInstance<T>) => void | Promise<void>;
@@ -284,6 +286,8 @@ export type FormContextProps = {
 
 export type FormOptions = {
   validateOn?: ValidateOnType;
+  reInitialization?: boolean;
+  onValidate?: () => void;
 };
 
 export interface FormInstance<T extends Schema> {
