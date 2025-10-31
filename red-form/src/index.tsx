@@ -20,7 +20,9 @@ const isPromise = (result: any) => {
 
 const FormContext = createContext<FormContextProps>({
   open: () => 0,
-  close: () => {}
+  close: () => {},
+  validate_now: 0,
+  validate: reset => {}
 });
 
 export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T>) => void | Promise<void>, options?: FormOptions): FormInstance<T> {
@@ -30,6 +32,8 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
   const [touched, setTouched] = useState<Touched<T>>({});
   const [activeField, set_active_field] = useState<keyof T>();
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [validating, setValidating] = useState<boolean>(false);
+  const context = useContext(FormContext);
 
   const initialValues = useMemo(() => {
     const values = {} as Values<T>;
@@ -110,6 +114,10 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
     const field = schema[key];
     const fieldErrors: string[] = [];
 
+    if (updateState) {
+      if (validating === false) setValidating(true);
+    }
+
     if (field.disabled) return fieldErrors;
     if (field.validate) field.validate({ field: key as string, props: field, form }).forEach(error => fieldErrors.push(error));
     else {
@@ -131,6 +139,7 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
     if (updateState) {
       if (fieldErrors.length > 0) setErrors({ ...errors, [key]: fieldErrors });
       else setErrors({ ...errors, [key]: undefined });
+      if (validating === true) setValidating(false);
     }
 
     return fieldErrors;
@@ -138,25 +147,35 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
 
   const validate = useCallback(() => {
     if (options && options.onValidate && typeof options.onValidate === "function") options.onValidate();
+    if (context && context.validate && typeof context.validate === "function") context.validate();
+    if (validating === false) setValidating(true);
+
     const newErrors: Errors<T> = {};
     (Object.keys(schema) as (keyof T)[]).forEach(key => {
       const fieldErrors = validateField(key, false);
       if (fieldErrors.length > 0) newErrors[key] = fieldErrors;
     });
+
     setErrors(newErrors);
+    if (validating === true) setValidating(false);
+
     return Object.keys(newErrors).length === 0;
   }, [values, schema]);
 
   const submit = useCallback(async () => {
     let result: any;
 
-    if (options && options.validateOn && options.validateOn.includes("submit") && form.validate()) result = onSubmit(values);
-    else result = onSubmit(values);
+    if (options && options.validateOn && options.validateOn.includes("submit")) {
+      const no_error = form.validate();
+      if (no_error) result = onSubmit(values);
+    } else result = onSubmit(values);
 
     if (isPromise(result)) {
       setSubmitting(true);
       // @ts-ignore
       result.finally(() => {
+        if (context && typeof context.validate === "function") context.validate(false);
+
         setSubmitting(false);
       });
     }
@@ -180,6 +199,12 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
   useEffect(() => {
     if (options && options.validateOn && options.validateOn.includes("active") && !options.validateOn.includes("change") && activeField) validateField(activeField, true);
   }, [values, activeField]);
+
+  useEffect(() => {
+    if (context.validate_now && typeof context.validate_now === "number" && context.validate_now > 0) {
+      validate();
+    }
+  }, [context.validate]);
 
   const form = {
     submitting,
@@ -224,6 +249,7 @@ const Form = <T extends Schema>({
   description,
   disabled,
   onSubmit,
+  onDelete,
   onChange,
   onError,
   onBlur,
@@ -275,8 +301,8 @@ const Form = <T extends Schema>({
       )}
       <div className="red-form" style={{ ...sx.form }}>
         {(Object.entries(schema) as [string, T[keyof T]][]).map(([field, props]) => {
-          props.disabled = Boolean(disabled) || Boolean(props.disabled);
-          return <InputContainer key={field as string} field={field} props={props} form={form} sx={sx} />;
+          props.disabled = Boolean(disabled) || Boolean(props.disabled) || Boolean(props.hidden);
+          return <Fragment key={field as string}>{!props.hidden && <InputContainer field={field} props={props} form={form} sx={sx} />}</Fragment>;
         })}
         {disabled && <div style={{ width: "100%", height: "100%", position: "absolute", cursor: "default", pointerEvents: "all", zIndex: 999, inset: 0 }}></div>}
         {onSubmit && !disabled && (
@@ -302,6 +328,18 @@ const Form = <T extends Schema>({
             >
               Submit
             </button>
+            {onDelete && (
+              <button
+                className={"red-form-button red-form-delete-button"}
+                onClick={e => {
+                  e.preventDefault();
+                  onDelete(form);
+                }}
+                style={{ ...sx.deleteButton }}
+              >
+                Delete
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -611,6 +649,7 @@ const RadioField = <T extends Schema, K extends keyof T>({ field, props, form, e
         const value = typeof item === "string" ? item : item.value;
 
         const toggle = () => {
+          if (form.activeField !== field) form.setFieldActive(field);
           if (form["values"][field] === value) form.setFieldValue(field, "");
           else form.setFieldValue(field, value);
         };
@@ -667,7 +706,7 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
   const [input, setInput] = useState("");
   const [show_suggestions, set_show_suggestions] = useState(false);
 
-  const value = form.values[field] as number | string | null;
+  const value = form.values[field];
 
   const reInitialization = () => {
     if ((value !== null || value !== "") && input === "") {
@@ -714,12 +753,12 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
   useEffect(reInitialization, [value]);
 
   useEffect(() => {
-    exactMatch();
+    if (form.touched[field]) exactMatch();
   }, [input]);
 
-  // useEffect(() => {
-  //   exactMatch();
-  // }, [props.options]);
+  useEffect(() => {
+    if (props.reloadOptions !== false) reInitialization();
+  }, [props.options]);
 
   const filterd = useMemo(() => {
     return props.options
@@ -774,7 +813,7 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
           if (!form.touched[field]) form.setFieldTouched(field, true);
         }}
       />
-      {form.activeField !== field && <div className="red-form-search-field-nav-arrow">⏷</div>}
+      {form.activeField !== field && !props.disabled && <div className="red-form-search-field-nav-arrow">⏷</div>}
       {show && (
         <ul className="red-form-search-field-suggestion-container" style={{}}>
           {filterd.map((item, index) => {
@@ -1015,6 +1054,7 @@ const ImageField = <T extends Schema, K extends keyof T>({ field, props, form, e
 
 export const FormProvider = ({ children }: { children: ReactNode }) => {
   const [forms, setForms] = useState<Record<number, FormProps<any>>>({});
+  const [_validate_now, _set_validate_now] = useState<number>(0);
 
   const formValues = useMemo(() => Object.entries(forms), [forms]);
 
@@ -1037,7 +1077,17 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <FormContext.Provider value={{ open, close }}>
+    <FormContext.Provider
+      value={{
+        open,
+        close,
+        validate_now: _validate_now,
+        validate: reset => {
+          if (reset === undefined) _set_validate_now(_validate_now + 1);
+          else if (reset === false) _set_validate_now(0);
+        }
+      }}
+    >
       {formValues.map(([key, props]) => {
         const id = Number(key);
         return (
@@ -1171,4 +1221,4 @@ export const create = <T extends Schema>(schema: T) => {
 };
 
 export default Form;
-export type { Schema };
+export type { Schema, FormSX };

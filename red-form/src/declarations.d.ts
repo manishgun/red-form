@@ -27,6 +27,7 @@ export type BaseField = {
   disabled?: boolean;
   span?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   validate?: <T extends Schema, K extends keyof T>({ field, props, form }: { field: string; props: T[K]; form: FormInstance<T> }) => string[];
+  hidden?: boolean;
 };
 
 export type TextFieldProps = BaseField & {
@@ -46,9 +47,10 @@ export type EmailFieldProps = BaseField & {
 
 export type SearchFieldProps = BaseField & {
   component: "search";
-  value: string;
+  value: string | number;
   autoFill?: AutoFillField;
   options: Option[];
+  reloadOptions?: boolean;
   adorment?: Adorment;
 };
 
@@ -239,6 +241,7 @@ export type FormSX = {
   actionArea?: CSSProperties;
   resetButton?: CSSProperties;
   submitButton?: CSSProperties;
+  deleteButton?: CSSProperties;
   inputContainer?: CSSProperties;
   inputLabelContainer?: CSSProperties;
   inputLabel?: CSSProperties;
@@ -262,6 +265,7 @@ export type FormProps<T extends Schema> = {
   };
   sx?: FormSX;
   onSubmit?: (values: Values<T>, form: FormInstance<T>) => void | Promise<void>;
+  onDelete?: (form: FormInstance<T>) => void | Promise<void>;
   onChange?: (values: Values<T>, form: FormInstance<T>) => void;
   onError?: (values: Errors<T>, form: FormInstance<T>) => void;
   onBlur?: (values: Touched<T>, form: FormInstance<T>) => void;
@@ -282,6 +286,8 @@ export type Touched<T extends Schema> = Partial<Record<keyof T, boolean>>;
 export type FormContextProps = {
   open: <T extends Schema>(props: FormProps<T>) => number;
   close: (index: number) => void;
+  validate_now: number;
+  validate: (reset?: boolean) => void;
 };
 
 export type FormOptions = {
