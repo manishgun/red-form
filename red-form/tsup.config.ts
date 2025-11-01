@@ -6,6 +6,6 @@ export default defineConfig({
   dts: true, // generate type definitions
   sourcemap: false, // useful for debugging
   clean: true,
-  minify: true,
+  // minify: true,
   external: ["react", "react-dom"] // don't bundle React
 });

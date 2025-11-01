@@ -860,7 +860,7 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
   const filterd = useMemo(() => {
     return values
       .filter(item => {
-        if ((form.values[field] as string[]).includes(item)) return false;
+        if (((form.values[field] as string[]) || []).includes(item)) return false;
         return item.toLowerCase().includes(input.toLowerCase());
       })
       .slice(0, 3);
@@ -873,7 +873,7 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
   return (
     <div className="red-form-multi-select-wrapper">
       <div className="red-form-multi-select-container">
-        {(form.values[field] as string[]).map(item => {
+        {((form.values[field] as string[]) || []).map(item => {
           return (
             <div key={item} className="red-form-multi-select-item">
               <span>{map[item]}</span>
@@ -888,7 +888,7 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
                   e.preventDefault();
                   form.setFieldValue(
                     field,
-                    (form.values[field] as string[]).filter((_item: string) => {
+                    ((form.values[field] as string[]) || []).filter((_item: string) => {
                       return _item !== item;
                     })
                   );

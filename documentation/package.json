@@ -17,8 +17,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-icons": "^5.5.0",
-    "react-syntax-highlighter": "^15.5.13",
-    "red-form": "^1.0.9"
+    "react-syntax-highlighter": "^15.5.13"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
