@@ -2,7 +2,7 @@
 ![red form code snippet](https://crudios.com/images/red-form-code-snapshot.png)
 ---
 
-# 🟥 **Red Form**
+# 🟥 **[Red Form](https://crudios.com/projects/red-form)**
 
 > **Schema-driven React form system that builds entire UI — no HTML, no CSS.**
 > Define once. Render anywhere. Fully typed, flexible, and lightning-fast.
@@ -17,8 +17,10 @@
 </p>
 
 ---
+![red form code snippet](https://raw.githubusercontent.com/manishgun/red-form/refs/heads/main/red-form/public/red-form-job-application.png)
 
-## 🚀 Why Red Form?
+
+## 🚀 Why [RED FORM](https://raw.githubusercontent.com/manishgun/red-form/refs/heads/main/red-form/public/red-form-job-application.png)?
 
 Building forms in React often means juggling inputs, styles, and validation logic for every single field.
 **Red Form** solves that by letting you define the **schema only once** — it automatically generates the UI, handles validation, manages state, and aligns everything perfectly.
@@ -35,7 +37,8 @@ You get **developer clarity**, **instant layout**, and **zero boilerplate**.
 - 🧩 **Extensible** – inject custom components and validation logic
 - 🚀 **Optimized** – minimal re-renders, built for scalability
 - 💡 **Declarative logic** – dynamic visibility and branching made easy
-
+- 🪶 **Extreamly Light Weight** – 56kb package can save your multiple hours
+- 🪲**Low Code** - Low or Less code means less chance of BUG.
 ---
 
 ## 📦 Installation
