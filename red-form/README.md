@@ -1,10 +1,5 @@
-Perfect — that’s an excellent addition 👏
 
-This **Job Application** example shows _the real power of Red Form_:
-multiple field types, validation, autofill attributes, layout spans, and grouped input logic — all without touching HTML or CSS.
-
-Below is your **final README.md**, updated to include this **third, complete example**, seamlessly integrated and beautifully structured for **npm and GitHub** readers:
-
+![red form code snippet](https://crudios.com/images/red-form-code-snapshot.png)
 ---
 
 # 🟥 **Red Form**
@@ -173,14 +168,14 @@ export default function JobApplication() {
     qualification: {
       label: "Highest Qualification",
       component: "checkbox",
-      value: "",
+      value: "", // INITIAL VALUE BLANK QUOTE ON CHECKBOX COMPONENT WILL ALLOW SINGLE CHECK AT A TIME.
       options: ["Diploma", "B.Tech", "M.Tech"],
       required: true
     },
     site: {
       label: "Preferred Site (multi select)",
       component: "checkbox",
-      value: [],
+      value: [], // INITIAL VALUE BLANK ARRAY ON CHECKBOX COMPONENT WILL ALLOW MULTI SELECT.
       options: ["on-site", "remote"],
       required: true
     },
@@ -209,6 +204,9 @@ export default function JobApplication() {
 - Built-in **autoFill** support
 - **Multi-column layout** via `span`
 - Zero external UI dependency — all styling and alignment handled by Red Form
+
+![red form code snippet](https://crudios.com/images/red-form-code-suggestion.png)
+
 
 ---
 
