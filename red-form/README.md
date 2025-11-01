@@ -225,22 +225,6 @@ export default function JobApplication() {
 />
 ```
 
----
-
-## 🧠 Type Safety Example
-
-```ts
-import type { Schema, Values } from "red-form";
-
-type ProductSchema = Schema<typeof productForm>;
-
-function onSubmit(values: Values<ProductSchema>) {
-  // ✅ values are strongly typed here
-}
-```
-
----
-
 ## 🧑‍💻 Author
 
 **Manish Gun**
