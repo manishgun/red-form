@@ -29,6 +29,14 @@
   "keywords": [
     "react",
     "form",
+    "input",
+    "search",
+    "tags",
+    "dropdown",
+    "checkbox",
+    "switch",
+    "validation",
+    "typesafe",
     "formik",
     "dialog",
     "typescript",
@@ -47,7 +55,7 @@
   "author": {
     "name": "Manish Gun",
     "email": "mail.cto.manish@gmail.com",
-    "url": "https://manishgun.vercel.app"
+    "url": "https://crudios.com/projects/red-form"
   },
   "license": "MIT",
   "repository": {
