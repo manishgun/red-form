@@ -226,7 +226,7 @@ export default function JobApplication() {
 ## 🧑‍💻 Author
 
 **Manish Gun**
-💻 [GitHub](https://github.com/manishgun) • 🌐 [Website](https://manishgun.vercel.app) • ✉️ [mail.cto.manish@gmail.com](mailto:mail.cto.manish@gmail.com)
+💻 [GitHub](https://github.com/manishgun) • 🌐 [Website](https://crudios.com/projects/red-form) • ✉️ [mail.cto.manish@gmail.com](mailto:mail.cto.manish@gmail.com)
 
 ---
 
