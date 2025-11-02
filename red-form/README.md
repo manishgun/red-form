@@ -201,6 +201,53 @@ export default function JobApplication() {
 }
 ```
 
+## 👩‍💼 Example 4 — LogIn Form Schema (Real-world)
+
+```tsx 
+
+const schema = create({
+username: { 
+	label: "username", 
+	component: "text", 
+	value: "", 
+	autoFill: "email", 
+	required: true 
+},
+password: { 
+	label: "password", 
+	component: "password",
+	value: "", 
+	required: true 
+}}),
+```
+
+## 👩‍💼 Example 5 — SignUp Form Schema (Real-world)
+
+```tsx 
+
+const schema = create({
+ name: {
+	 label: "Name", 
+	 component: "text", 
+	 value: "", 
+	 autoFill: "name", 
+	 required: true 
+ },
+ email: {
+	 label: "email", 
+	 component: "text", 
+	 value: "", 
+	 autoFill: "email", 
+	 required: true 
+ },
+password: {
+	label: "password", 
+	component: "password", 
+	value: "", 
+	required: true 
+}}),
+```
+
 🧩 This example demonstrates:
 
 - 10+ field types (text, select, radio, checkbox, switch, textarea, search, etc.)
@@ -220,7 +267,7 @@ export default function JobApplication() {
 
 ### 🧩 Common Props `available in all components`
 ---
-```JSON
+```tsx
 {
  label: string;
   required?: boolean;
@@ -239,18 +286,18 @@ Label is always mandatory.
 
 ### Adorment
 
-```JSON
+```tsx
 {
   start?: ReactNode ;
   end?: ReactNode ;
 }
 
 ```
-### Text
+###🗒️ Text
 
 Text field is most commonly used to handel single line string value input.
 
-```JSON
+```tsx
 {
    component: "text"; 
   value: string; // Initial Value
@@ -260,9 +307,9 @@ Text field is most commonly used to handel single line string value input.
 }
 ```
 
-### TextArea
+### 🖹 TextArea
 Text Area is just a multiline text field.
-```JSON
+```tsx
 {
    component: "textarea"; 
   value: string; // Initial Value
@@ -272,9 +319,9 @@ Text Area is just a multiline text field.
 }
 ```
 
-### Number
+### 🖹 Number
 In Number Field you can only enter number.
-```JSON
+```tsx
 {
    component: "number"; 
   value: number; // Initial Value
@@ -284,11 +331,11 @@ In Number Field you can only enter number.
 }
 ```
 
-###  Password
+### 🔑 Password
 
 It rendered as password field, you can't see entered value.
 
-```JSON
+```tsx
 {
    component: "password"; 
   value: string; // Initial Value
@@ -297,11 +344,11 @@ It rendered as password field, you can't see entered value.
 }
 ```
 
-### Select
+### 🔽 Select
 
 Select prop will be renderd as dropdown field.
 
-```JSON
+```tsx
 {
   component: "select";
   value: string | number; // Initial Value
@@ -311,9 +358,9 @@ Select prop will be renderd as dropdown field.
 ```
 
 
-### Search
+### 🔍 Search
 Search Field is a dropdown which is searchable.
-```JSON
+```tsx
 {
   component: "search";
   value: string | number; // Initial Value
@@ -323,11 +370,11 @@ Search Field is a dropdown which is searchable.
 }
 ```
 
-### Tags
+### 🏷️ Tags
 
 Tags can hole multiple user entered string values.
 
-```JSON
+```tsx
 {
   component: "tags"; 
   value: string[]; // Initial Value
@@ -336,11 +383,11 @@ Tags can hole multiple user entered string values.
 }
 ```
 
-### Multi Select
+### 🔽🔍 Multi Select
 
 Multi-Select is mixture of tags and search field, can pick searchable multiple values.
 
-```JSON
+```tsx
 {
   component: "multi-select"; 
   value: string[]; // Initial Value
@@ -350,18 +397,18 @@ Multi-Select is mixture of tags and search field, can pick searchable multiple v
 }
 ```
 
-### Switch
+### ⇆ Switch
 Switch are toogle button commonly used to pick boolean values.
-```JSON
+```tsx
 {
   component: "switch"; 
   value: boolean; // Initial Value
 }
 ```
 
-### Radio
+### 🔴 Radio
 Radio Group is used pick single value from option. good for 2 or 3 values.
-```JSON
+```tsx
 {
   component: "radio";
   value: string;
@@ -370,9 +417,9 @@ Radio Group is used pick single value from option. good for 2 or 3 values.
 }
 ```
 
-### Range
+### ─•──── Range
 Range component will be rendered as a slider.
-```JSON
+```tsx
 {
    component: "range"; 
   value: number; // Initial Value
@@ -382,27 +429,27 @@ Range component will be rendered as a slider.
 }
 ```
 
-### Color
+### 🌈 Color
 
-```JSON
+```tsx
 {
    component: "color"; 
   value: string[]; // Initial Value (#ffffff, #ff0000)
 }
 ```
 
-### Image
+### 🌄 Image
 In image component you have to add onSelect prop to handel picked file and convert it into url.
-```JSON
+```tsx
 {
    component: "image"; 
   value: string; // Initial Value ( link or dataurl)
   onSelect: (file: File) => Promise<string>; The uploader function 
 }
 ```
-### Checkbox `Single Value`
+### ✅ Checkbox `Single Value`
 
-```JSON
+```tsx
 {
   component: "checkbox";
   value: string | undefined;
@@ -411,9 +458,9 @@ In image component you have to add onSelect prop to handel picked file and conve
 }
 ```
 
-### Checkbox `Multi Value`
+### ✅✅ Checkbox `Multi Value`
 
-```JSON
+```tsx
 {
   component: "checkbox";
   value: string[]; // initial value must be string of array.
@@ -421,10 +468,10 @@ In image component you have to add onSelect prop to handel picked file and conve
   options:  Option[]; // string[] or { label: string; value: string | number }[]
 }
 ```
-### Date
+### 📅 Date
 The value pattern of Date is `2025-11-02` (YYYY-MM-DD).
 
-```JSON
+```tsx
 {
   component: "date";
   value: "";
@@ -432,9 +479,9 @@ The value pattern of Date is `2025-11-02` (YYYY-MM-DD).
   max?: string;
 }
 ```
-### Date Time
+### 📅🕘 Date Time
 The value pattern of Date Time is `2025-11-02T14:20` (YYYY-MM-DDTHH:mm).
-```JSON
+```tsx
 {
   component: "datetime";
   value: "";
@@ -442,10 +489,10 @@ The value pattern of Date Time is `2025-11-02T14:20` (YYYY-MM-DDTHH:mm).
   max?: string;
 }
 ```
-### Time
+### 🕘 Time
 The value pattern of time is `13:26` (HH:mm)
 
-```JSON
+```tsx
 {
   component: "time";
   value: "";
@@ -454,10 +501,10 @@ The value pattern of time is `13:26` (HH:mm)
 }
 ```
 
-### Week
+### 📅 Week
 The value pattern of week is `2025-32` (YYYY-WW) for 32th week of 2025.
 
-```JSON
+```tsx
 {
   component: "week";
   value: "";
@@ -466,11 +513,11 @@ The value pattern of week is `2025-32` (YYYY-WW) for 32th week of 2025.
 }
 ```
 
-### Month
+### 🗓 Month
 
 The value pattern of Month  is `2025-04` (YYYY-MM) for April.
 
-```JSON
+```tsx
 {
   component: "month";
   value: "";
@@ -478,10 +525,10 @@ The value pattern of Month  is `2025-04` (YYYY-MM) for April.
   max?: string;
 }
 ```
-### Custom
+### ✨ Custom
 Custom component will allow you to render anything in place of the form field.
 
-```JSON
+```tsx
 {
   component: "custom";
   value?: any;
