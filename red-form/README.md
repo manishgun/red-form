@@ -213,6 +213,285 @@ export default function JobApplication() {
 
 ---
 
+## 🧩 Components
+
+---
+
+
+### 🧩 Common Props `available in all components`
+---
+```JSON
+{
+ label: string;
+  required?: boolean;
+  placeholder?: string;
+  helperText?: ReactNode;
+  information?: string;
+  disabled?: boolean;
+  span?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+  validate?: ({ field, props, form }) => string[];
+  hidden?: boolean;
+  adorment?: Adorment;
+}
+```
+Label is always mandatory.
+
+
+### Adorment
+
+```JSON
+{
+  start?: ReactNode ;
+  end?: ReactNode ;
+}
+
+```
+### Text
+
+Text field is most commonly used to handel single line string value input.
+
+```JSON
+{
+   component: "text"; 
+  value: string; // Initial Value
+  autoFill?: AutoFillField; // Browser supported AutoFill
+  min?: number;  // minimum length
+  max?: number; // maximum length
+}
+```
+
+### TextArea
+Text Area is just a multiline text field.
+```JSON
+{
+   component: "textarea"; 
+  value: string; // Initial Value
+  min?: number;  // minimum length
+  max?: number; // maximum length
+  span: 12;
+}
+```
+
+### Number
+In Number Field you can only enter number.
+```JSON
+{
+   component: "number"; 
+  value: number; // Initial Value
+  min?: number;  // minimum value
+  max?: number; // maximum value
+  step?: number; // per step value
+}
+```
+
+###  Password
+
+It rendered as password field, you can't see entered value.
+
+```JSON
+{
+   component: "password"; 
+  value: string; // Initial Value
+  min?: number;  // minimum value
+  max?: number; // maximum value
+}
+```
+
+### Select
+
+Select prop will be renderd as dropdown field.
+
+```JSON
+{
+  component: "select";
+  value: string | number; // Initial Value
+  options: Option[]; // string[] or {label: string; value: string | number}[]
+  reloadOptions?: boolean;
+}
+```
+
+
+### Search
+Search Field is a dropdown which is searchable.
+```JSON
+{
+  component: "search";
+  value: string | number; // Initial Value
+  autoFill?: AutoFillField; // Same Browser AutoFIlls
+  options: Option[]; // string[] or {label: string; value: string | number}[]
+  reloadOptions?: boolean;
+}
+```
+
+### Tags
+
+Tags can hole multiple user entered string values.
+
+```JSON
+{
+  component: "tags"; 
+  value: string[]; // Initial Value
+  min?: number;  // minimum value
+  max?: number; // maximum value
+}
+```
+
+### Multi Select
+
+Multi-Select is mixture of tags and search field, can pick searchable multiple values.
+
+```JSON
+{
+  component: "multi-select"; 
+  value: string[]; // Initial Value
+  options: Option[]; // string[] or {label: string; value: string | number}[]
+  min?: number;  // minimum number of selected values
+  max?: number; // maximum number of selected values
+}
+```
+
+### Switch
+Switch are toogle button commonly used to pick boolean values.
+```JSON
+{
+  component: "switch"; 
+  value: boolean; // Initial Value
+}
+```
+
+### Radio
+Radio Group is used pick single value from option. good for 2 or 3 values.
+```JSON
+{
+  component: "radio";
+  value: string;
+  direction?: "row" | "column";
+  options: Option[]; // string[] or {label: string; value: string | number}[]
+}
+```
+
+### Range
+Range component will be rendered as a slider.
+```JSON
+{
+   component: "range"; 
+  value: number; // Initial Value
+  min?: number;  // minimum value
+  max?: number; // maximum value
+  step?: number; // per step value
+}
+```
+
+### Color
+
+```JSON
+{
+   component: "color"; 
+  value: string[]; // Initial Value (#ffffff, #ff0000)
+}
+```
+
+### Image
+In image component you have to add onSelect prop to handel picked file and convert it into url.
+```JSON
+{
+   component: "image"; 
+  value: string; // Initial Value ( link or dataurl)
+  onSelect: (file: File) => Promise<string>; The uploader function 
+}
+```
+### Checkbox `Single Value`
+
+```JSON
+{
+  component: "checkbox";
+  value: string | undefined;
+  direction?: "row" | "column"; // default "row"
+  options:  Option[]; // string[] or { label: string; value: string | number }[]
+}
+```
+
+### Checkbox `Multi Value`
+
+```JSON
+{
+  component: "checkbox";
+  value: string[]; // initial value must be string of array.
+  direction?: "row" | "column"; // default "row"
+  options:  Option[]; // string[] or { label: string; value: string | number }[]
+}
+```
+### Date
+The value pattern of Date is `2025-11-02` (YYYY-MM-DD).
+
+```JSON
+{
+  component: "date";
+  value: "";
+  min?: string;
+  max?: string;
+}
+```
+### Date Time
+The value pattern of Date Time is `2025-11-02T14:20` (YYYY-MM-DDTHH:mm).
+```JSON
+{
+  component: "datetime";
+  value: "";
+  min?: string;
+  max?: string;
+}
+```
+### Time
+The value pattern of time is `13:26` (HH:mm)
+
+```JSON
+{
+  component: "time";
+  value: "";
+  min?: string;
+  max?: string;
+}
+```
+
+### Week
+The value pattern of week is `2025-32` (YYYY-WW) for 32th week of 2025.
+
+```JSON
+{
+  component: "week";
+  value: "";
+  min?: string;
+  max?: string;
+}
+```
+
+### Month
+
+The value pattern of Month  is `2025-04` (YYYY-MM) for April.
+
+```JSON
+{
+  component: "month";
+  value: "";
+  min?: string;
+  max?: string;
+}
+```
+### Custom
+Custom component will allow you to render anything in place of the form field.
+
+```JSON
+{
+  component: "custom";
+  value?: any;
+  inputBase?: boolean;
+  render: ({ field, props, form }) => ReactNode;
+}
+```
+
+---
+
 ## 🎨 Styling with `sx`
 
 ```tsx
