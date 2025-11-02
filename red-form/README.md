@@ -60,7 +60,12 @@ import Form, { create } from "red-form";
 import "red-form/dist/index.css";
 
 const productForm = create({
-  name: { label: "Product Name", component: "text", value: "", required: true },
+  name: {
+	label: "Product Name",
+	component: "text",
+	value: "",
+	required: true
+	},
   category: {
     label: "Category",
     component: "select",
@@ -75,8 +80,17 @@ const productForm = create({
     min: 0,
     required: true
   },
-  available: { label: "In Stock", component: "switch", value: true },
-  description: { label: "Description", component: "textarea", value: "", span: 12 }
+  available: {
+	label: "In Stock",
+	component: "switch",
+	value: true
+	},
+  description: {
+	label: "Description",
+	component: "textarea",
+	value: "",
+	span: 12
+}
 });
 
 export default function CreateProduct() {
@@ -96,7 +110,12 @@ export default function CreateProduct() {
 import Form, { create } from "red-form";
 
 const schema = create({
-  title: { label: "Project Title", component: "text", value: "", required: true },
+  title: {
+	label: "Project Title",
+	component: "text",
+	value: "",
+	required: true
+ },
   category: {
     label: "Category",
     component: "select",
@@ -116,7 +135,11 @@ const schema = create({
       });
     }
   },
-  isPrivate: { label: "Private Project", component: "switch", value: false },
+  isPrivate: {
+	label: "Private Project",
+	component: "switch",
+	value: false
+	},
   password: {
     label: "Access Password",
     component: "password",
@@ -152,45 +175,111 @@ import Form, { create } from "red-form";
 
 export default function JobApplication() {
   const schema = create({
-    name: { label: "Name", component: "text", value: "", autoFill: "name", required: true, max: 20 },
-    email: { label: "Email", component: "text", value: "", autoFill: "email", required: true, max: 30 },
-    phone: { label: "Phone", component: "text", value: "", autoFill: "home tel", required: true, max: 10 },
-    address: { label: "Address", component: "text", value: "", autoFill: "address-line1", required: true, max: 20 },
-    city: { label: "City", component: "text", value: "", autoFill: "address-level3", required: true, max: 20 },
-    district: { label: "District", component: "text", value: "", autoFill: "address-level2", required: true, max: 20 },
-    state: { label: "State", component: "text", value: "", autoFill: "address-level3", required: true, max: 20 },
-    zipcode: { label: "Pincode", component: "text", value: "", autoFill: "postal-code", required: true, max: 6 },
+    name: {
+		label: "Name",
+		component: "text",
+		value: "",
+		autoFill: "name",
+		required: true,
+		max: 20
+	},
+	email: {
+		label: "Email",
+		component: "text",
+		value: "",
+		autoFill: "email",
+		required: true,
+		max: 30
+	},
+	phone: {
+		label: "Phone",
+		component: "text",
+		value: "",
+		autoFill: "home tel",
+		required: true,
+		max: 10
+	},
+	address: {
+		label: "Address",
+		component: "text",
+		value: "",
+		autoFill: "address-line1",
+		required: true,
+		max: 20
+	},
+	city: {
+		label: "City",
+		component: "text",
+		value: "",
+		autoFill: "address-level3",
+		required: true,
+		max: 20
+	},
+	district: {
+		label: "District",
+		component: "text",
+		value: "",
+		autoFill: "address-level2",
+		required: true,
+		max: 20
+	},
+	state: {
+		label: "State",
+		component: "text",
+		value: "",
+		autoFill: "address-level3",
+		required: true,
+		max: 20
+	},
+    zipcode: {
+		label: "Pincode",
+		component: "text",
+		value: "",
+		autoFill: "postal-code",
+		required: true,
+		max: 6
+	},
     role: {
-      label: "Role",
-      component: "search",
-      value: "",
-      options: ["frontend", "backend", "sales", "bidder", "analyst", "architect", "DBA"],
-      required: true
+		label: "Role",
+		component: "search",
+		value: "",
+		options: ["frontend", "backend", "sales", "bidder", "analyst", "architect", "DBA"],
+		required: true
     },
-    gender: { label: "Gender", component: "radio", value: "", options: ["Male", "Female", "Other"] },
+    gender: {
+		label: "Gender",
+		component: "radio",
+		value: "",
+		options: ["Male", "Female", "Other"]
+	},
     qualification: {
-      label: "Highest Qualification",
-      component: "checkbox",
-      value: "", // INITIAL VALUE BLANK QUOTE ON CHECKBOX COMPONENT WILL ALLOW SINGLE CHECK AT A TIME.
-      options: ["Diploma", "B.Tech", "M.Tech"],
-      required: true
+		label: "Highest Qualification",
+		component: "checkbox",
+		value: "", // INITIAL VALUE BLANK QUOTE ON CHECKBOX COMPONENT WILL ALLOW SINGLE CHECK AT A TIME.
+		options: ["Diploma", "B.Tech", "M.Tech"],
+		required: true
     },
     site: {
-      label: "Preferred Site (multi select)",
-      component: "checkbox",
-      value: [], // INITIAL VALUE BLANK ARRAY ON CHECKBOX COMPONENT WILL ALLOW MULTI SELECT.
-      options: ["on-site", "remote"],
-      required: true
+		label: "Preferred Site (multi select)",
+		component: "checkbox",
+		value: [], // INITIAL VALUE BLANK ARRAY ON CHECKBOX COMPONENT WILL ALLOW MULTI SELECT.
+		options: ["on-site", "remote"],
+		required: true
     },
     skills: {
-      label: "Skills",
-      component: "multi-select",
-      value: [],
-      span: 12,
-      options: ["react", "angular", "node.js", "php"],
-      required: true
+		label: "Skills",
+		component: "multi-select",
+		value: [],
+		span: 12,
+		options: ["react", "angular", "node.js", "php"],
+		required: true
     },
-    comment: { label: "Comment", component: "textarea", value: "", span: 12 }
+    comment: {
+		label: "Comment",
+		component: "textarea",
+		value: "",
+		span: 12
+	}
   });
 
   return (
@@ -271,10 +360,10 @@ password: {
 {
  label: string;
   required?: boolean;
-  placeholder?: string;
+  placeholder?: string; 
   helperText?: ReactNode;
   information?: string;
-  disabled?: boolean;
+  disabled?: boolean; 
   span?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   validate?: ({ field, props, form }) => string[];
   hidden?: boolean;
@@ -283,8 +372,43 @@ password: {
 ```
 Label is always mandatory.
 
+### 🛡️ Validate Function
+The `validate function` expects from you to return string of array.
+
+```tsx
+
+const schema = create({
+	field: {
+		component: "text"; 
+		value: "",
+		validate: ({field, props, form})=>{
+			const errors:string[] = [];
+			const value = form.values[field];
+			if(!value.startsWith('http')) errors.push(`${props.label} must start with "http".`)
+			return errors;
+		}
+	}
+})
+```
+
+### ⓘ Information
+The content of `information` will be shown as tooltip at the side of label.
+
+### 🤝 Helper Text
+The content of `helperText` will be shown as below the input field.
+
+### 🚫 Disabled
+if `disabled` is `true` then field will become readOnly can't edit that field.
+
+### 👻 Hidden
+if `hidden` is `true` then field will not shown in the form can be used in spacial cases.
+
+### 🤔 Placeholder
+The content of `placeholder` will be shown... Ok just guese it, I am not telling this.
 
 ### 📿Adorment
+Through `Adorment` You can add some element like `button`, `icons`, `div` at the start or end of the INPUT field.
+
 
 ```tsx
 {
@@ -372,7 +496,7 @@ Search Field is a dropdown which is searchable.
 
 ### 🏷️ Tags
 
-Tags can hole multiple user entered string values.
+Tags can hold multiple user entered string values.
 
 ```tsx
 {
