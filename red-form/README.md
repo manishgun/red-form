@@ -265,7 +265,7 @@ password: {
 ---
 
 
-### 🧩 Common Props `available in all components`
+### 💎 Common Props `available in all components`
 ---
 ```tsx
 {
@@ -284,7 +284,7 @@ password: {
 Label is always mandatory.
 
 
-### Adorment
+### 📿Adorment
 
 ```tsx
 {
@@ -293,7 +293,7 @@ Label is always mandatory.
 }
 
 ```
-###🗒️ Text
+### 🗒️Text
 
 Text field is most commonly used to handel single line string value input.
 
