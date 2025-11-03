@@ -173,6 +173,7 @@ export type MultiSelectFieldProps = BaseField & {
 export type TagsFieldProps = BaseField & {
   component: "tags";
   value: string[];
+  options: Option[];
 };
 
 export type ImageFieldProps = BaseField & {
@@ -262,6 +263,11 @@ export type FormProps<T extends Schema> = {
     validateOn?: FormOptions["validateOn"];
     reInitialization?: FormOptions["reInitialization"];
     onValidate?: FormOptions["onValidate"];
+    buttons?: {
+      reset?: string;
+      submit?: string;
+      delete?: string;
+    };
   };
   sx?: FormSX;
   onSubmit?: (values: Values<T>, form: FormInstance<T>) => void | Promise<void>;

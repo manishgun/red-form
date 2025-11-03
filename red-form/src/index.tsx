@@ -315,7 +315,7 @@ const Form = <T extends Schema>({
               }}
               style={{ ...sx.resetButton }}
             >
-              Reset
+              {options?.buttons?.reset || "Reset"}
             </button>
             <button
               onClick={() => {
@@ -326,7 +326,7 @@ const Form = <T extends Schema>({
               type="submit"
               style={{ ...sx.submitButton }}
             >
-              Submit
+              {options?.buttons?.submit || "Submit"}
             </button>
             {onDelete && (
               <button
@@ -337,7 +337,7 @@ const Form = <T extends Schema>({
                 }}
                 style={{ ...sx.deleteButton }}
               >
-                Delete
+                {options?.buttons?.delete || "Delete"}
               </button>
             )}
           </div>

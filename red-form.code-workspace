@@ -4,9 +4,6 @@
       "path": "red-form"
     },
     {
-      "path": "documentation"
-    },
-    {
       "path": "../crudios/crudios-frontend"
     }
   ],
