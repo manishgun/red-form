@@ -135,7 +135,7 @@ export type CheckboxFieldProps = BaseField & {
 
 export type RadioFieldProps = BaseField & {
   component: "radio";
-  value: string;
+  value: string | number;
   direction?: "row" | "column";
   options: Option[];
 };
@@ -160,7 +160,7 @@ export type SwitchFieldProps = BaseField & {
 
 export type SelectFieldProps = BaseField & {
   component: "select";
-  value: string;
+  value: string | number;
   options: Option[];
 };
 
@@ -303,6 +303,11 @@ export type FormOptions = {
 };
 
 export interface FormInstance<T extends Schema> {
+  initialValues: Values<T>;
+
+  schema: T;
+  setSchema: React.Dispatch<React.SetStateAction<T>>;
+
   submitting: boolean;
   setSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
 

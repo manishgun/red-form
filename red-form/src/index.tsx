@@ -25,15 +25,20 @@ const FormContext = createContext<FormContextProps>({
   validate: reset => {}
 });
 
-export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T>) => void | Promise<void>, options?: FormOptions): FormInstance<T> {
+export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) => void | Promise<void>, options?: FormOptions): FormInstance<T> {
   const ref = useRef<HTMLInputElement>(null);
   const [values, setValues] = useState<Values<T>>({} as Values<T>);
   const [errors, setErrors] = useState<Errors<T>>({});
+  const [schema, setSchema] = useState<T>(s);
   const [touched, setTouched] = useState<Touched<T>>({});
   const [activeField, set_active_field] = useState<keyof T>();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [validating, setValidating] = useState<boolean>(false);
   const context = useContext(FormContext);
+
+  useEffect(() => {
+    setSchema(s);
+  }, [s]);
 
   const initialValues = useMemo(() => {
     const values = {} as Values<T>;
@@ -207,6 +212,11 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
   }, [context.validate]);
 
   const form = {
+    initialValues,
+
+    schema,
+    setSchema,
+
     submitting,
     setSubmitting,
 
@@ -239,6 +249,12 @@ export function useForm<T extends Schema>(schema: T, onSubmit: (values: Values<T
   useEffect(() => {
     if (ref && ref.current && activeField === ref.current.name) ref.current.focus();
   }, [ref, activeField]);
+
+  useEffect(() => {
+    return () => {
+      if (context && context.validate) context.validate(true);
+    };
+  }, []);
 
   return form;
 }
@@ -574,11 +590,24 @@ const ColorField = <T extends Schema, K extends keyof T>({ field, props, form, e
 
 const SelectField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "select") return null;
+
+  const map = useMemo(() => {
+    return props.options.reduce((previous, current) => {
+      if (typeof current === "string") {
+        previous[current] = current;
+      } else {
+        previous[String(current.value)] = current.value;
+      }
+
+      return previous;
+    }, {} as Record<string, string | number>);
+  }, [props.options]);
+
   return (
     <select
       id={field as string}
       value={(form.values[field] as string) || ""}
-      onChange={e => form.setFieldValue(field, e.target.value)}
+      onChange={e => form.setFieldValue(field, map[e.target.value])}
       className={`red-form-select-field ${props.disabled ? "red-form-select-field-disabled" : ""} ${error ? "red-form-error" : ""}`}
     >
       <option value={""} className="red-form-select-option">
