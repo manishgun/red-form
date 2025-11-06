@@ -208,7 +208,7 @@
 .red-form-textarea {
   padding: 12px;
   resize: vertical;
-  min-height: 100px;
+  min-height: 200px;
 }
 
 .red-form-helper-text {
