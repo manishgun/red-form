@@ -196,6 +196,7 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
   );
 
   const resetForm = useCallback(() => {
+    if (context && context.validate) context.validate(true);
     setValues(initialValues);
     setTouched({});
     setErrors({});
@@ -252,7 +253,7 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
 
   useEffect(() => {
     return () => {
-      if (context && context.validate) context.validate(true);
+      resetForm();
     };
   }, []);
 
@@ -519,13 +520,52 @@ const TelephoneField = <T extends Schema, K extends keyof T>({ field, props, for
 
 const PasswordField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "password") return null;
-  return <input type="password" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  const [show, setShow] = useState(false);
+  return (
+    <div className="red-form-password-container">
+      <input
+        {...form.getFieldProps(field as string)}
+        id={`visible-${field}`}
+        autoComplete="current-password"
+        type={show && !form.submitting ? "text" : "password"}
+        className={`red-form-input ${error ? "red-form-error" : ""}`}
+      />
+      <input
+        name="password"
+        id="password"
+        type="password"
+        value={form["values"][field] as string}
+        style={{ position: "absolute", opacity: 0, top: "-30px", pointerEvents: "none", cursor: "none" }}
+      />
+      <div
+        className={`red-form-password-eye-icon inactive`}
+        onClick={() => {
+          setShow(pre => !pre);
+        }}
+      >
+        {show ? "hide" : "show"}
+        {/* 👁 */}
+      </div>
+    </div>
+  );
 };
 
 const NumberField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "number") return null;
   return (
-    <input type="number" min={props.min} max={props.max} step={props.step} className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />
+    <input
+      type="number"
+      {...form.getFieldProps(field as string)}
+      min={props.min}
+      max={props.max}
+      step={props.step}
+      className={`red-form-input ${error ? "red-form-error" : ""}`}
+      onChange={e => {
+        const val = parseFloat(e.target.value);
+        if (isNaN(val)) form.setFieldValue(field, "");
+        else form.setFieldValue(field, val);
+      }}
+    />
   );
 };
 
@@ -609,6 +649,9 @@ const SelectField = <T extends Schema, K extends keyof T>({ field, props, form, 
       value={(form.values[field] as string) || ""}
       onChange={e => form.setFieldValue(field, map[e.target.value])}
       className={`red-form-select-field ${props.disabled ? "red-form-select-field-disabled" : ""} ${error ? "red-form-error" : ""}`}
+      onClick={() => {
+        form.setFieldActive(field);
+      }}
     >
       <option value={""} className="red-form-select-option">
         Select {props.label}
@@ -1113,7 +1156,7 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
         validate_now: _validate_now,
         validate: reset => {
           if (reset === undefined) _set_validate_now(_validate_now + 1);
-          else if (reset === false) _set_validate_now(0);
+          else if (reset === true) _set_validate_now(0);
         }
       }}
     >

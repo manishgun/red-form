@@ -21,6 +21,8 @@
   --red-form-color-text: #000000;
   /* Slightly lighter version of text color */
   --red-form-color-text-secondary: color-mix(in srgb, var(--red-form-color-text) 70%, var(--red-form-color-background) 30%);
+  --red-form-color-text-inactive: color-mix(in srgb, var(--red-form-color-text-secondary) 40%, var(--red-form-color-background) 60%);
+
   --red-form-color-disabled: #f0f0f0;
   --red-form-color-error: #ff0404;
   --red-form-color-shadow: #c5c5c525;
@@ -177,7 +179,30 @@
   border: 12px solid transparent;
   outline: none;
   background: transparent;
+  flex-grow: 1;
   /* color: inherit; */
+}
+
+.red-form-password-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.red-form-password-eye-icon {
+  padding-inline: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.active {
+  color: var(--red-form-color-text);
+}
+
+.inactive {
+  color: var(--red-form-color-text-inactive);
 }
 
 .red-form-textarea {

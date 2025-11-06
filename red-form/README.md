@@ -1,6 +1,4 @@
-
-![red form code snippet](https://crudios.com/images/red-form-code-snapshot.png)
----
+## ![red form code snippet](https://crudios.com/images/red-form-code-snapshot.webp)
 
 # 🟥 **[Red Form](https://crudios.com/projects/red-form)**
 
@@ -17,10 +15,10 @@
 </p>
 
 ---
-![red form code snippet](https://raw.githubusercontent.com/manishgun/red-form/refs/heads/main/red-form/public/red-form-job-application.png)
 
+![red form code snippet](https://raw.githubusercontent.com/manishgun/red-form/refs/heads/main/red-form/public/red-form-job-application.webp)
 
-## 🚀 Why [RED FORM](https://raw.githubusercontent.com/manishgun/red-form/refs/heads/main/red-form/public/red-form-job-application.png)?
+## 🚀 Why [RED FORM](https://raw.githubusercontent.com/manishgun/red-form/refs/heads/main/red-form/public/red-form-job-application.webp)?
 
 Building forms in React often means juggling inputs, styles, and validation logic for every single field.
 **Red Form** solves that by letting you define the **schema only once** — it automatically generates the UI, handles validation, manages state, and aligns everything perfectly.
@@ -39,6 +37,7 @@ You get **developer clarity**, **instant layout**, and **zero boilerplate**.
 - 💡 **Declarative logic** – dynamic visibility and branching made easy
 - 🪶 **Extreamly Light Weight** – 56kb package can save your multiple hours
 - 🪲**Low Code** - Low or Less code means less chance of BUG.
+
 ---
 
 ## 📦 Installation
@@ -61,11 +60,11 @@ import "red-form/dist/index.css";
 
 const productForm = create({
   name: {
-	label: "Product Name",
-	component: "text",
-	value: "",
-	required: true
-	},
+    label: "Product Name",
+    component: "text",
+    value: "",
+    required: true
+  },
   category: {
     label: "Category",
     component: "select",
@@ -81,16 +80,16 @@ const productForm = create({
     required: true
   },
   available: {
-	label: "In Stock",
-	component: "switch",
-	value: true
-	},
+    label: "In Stock",
+    component: "switch",
+    value: true
+  },
   description: {
-	label: "Description",
-	component: "textarea",
-	value: "",
-	span: 12
-}
+    label: "Description",
+    component: "textarea",
+    value: "",
+    span: 12
+  }
 });
 
 export default function CreateProduct() {
@@ -111,11 +110,11 @@ import Form, { create } from "red-form";
 
 const schema = create({
   title: {
-	label: "Project Title",
-	component: "text",
-	value: "",
-	required: true
- },
+    label: "Project Title",
+    component: "text",
+    value: "",
+    required: true
+  },
   category: {
     label: "Category",
     component: "select",
@@ -136,10 +135,10 @@ const schema = create({
     }
   },
   isPrivate: {
-	label: "Private Project",
-	component: "switch",
-	value: false
-	},
+    label: "Private Project",
+    component: "switch",
+    value: false
+  },
   password: {
     label: "Access Password",
     component: "password",
@@ -176,110 +175,110 @@ import Form, { create } from "red-form";
 export default function JobApplication() {
   const schema = create({
     name: {
-		label: "Name",
-		component: "text",
-		value: "",
-		autoFill: "name",
-		required: true,
-		max: 20
-	},
-	email: {
-		label: "Email",
-		component: "text",
-		value: "",
-		autoFill: "email",
-		required: true,
-		max: 30
-	},
-	phone: {
-		label: "Phone",
-		component: "text",
-		value: "",
-		autoFill: "home tel",
-		required: true,
-		max: 10
-	},
-	address: {
-		label: "Address",
-		component: "text",
-		value: "",
-		autoFill: "address-line1",
-		required: true,
-		max: 20
-	},
-	city: {
-		label: "City",
-		component: "text",
-		value: "",
-		autoFill: "address-level3",
-		required: true,
-		max: 20
-	},
-	district: {
-		label: "District",
-		component: "text",
-		value: "",
-		autoFill: "address-level2",
-		required: true,
-		max: 20
-	},
-	state: {
-		label: "State",
-		component: "text",
-		value: "",
-		autoFill: "address-level3",
-		required: true,
-		max: 20
-	},
+      label: "Name",
+      component: "text",
+      value: "",
+      autoFill: "name",
+      required: true,
+      max: 20
+    },
+    email: {
+      label: "Email",
+      component: "text",
+      value: "",
+      autoFill: "email",
+      required: true,
+      max: 30
+    },
+    phone: {
+      label: "Phone",
+      component: "text",
+      value: "",
+      autoFill: "home tel",
+      required: true,
+      max: 10
+    },
+    address: {
+      label: "Address",
+      component: "text",
+      value: "",
+      autoFill: "address-line1",
+      required: true,
+      max: 20
+    },
+    city: {
+      label: "City",
+      component: "text",
+      value: "",
+      autoFill: "address-level3",
+      required: true,
+      max: 20
+    },
+    district: {
+      label: "District",
+      component: "text",
+      value: "",
+      autoFill: "address-level2",
+      required: true,
+      max: 20
+    },
+    state: {
+      label: "State",
+      component: "text",
+      value: "",
+      autoFill: "address-level3",
+      required: true,
+      max: 20
+    },
     zipcode: {
-		label: "Pincode",
-		component: "text",
-		value: "",
-		autoFill: "postal-code",
-		required: true,
-		max: 6
-	},
+      label: "Pincode",
+      component: "text",
+      value: "",
+      autoFill: "postal-code",
+      required: true,
+      max: 6
+    },
     role: {
-		label: "Role",
-		component: "search",
-		value: "",
-		options: ["frontend", "backend", "sales", "bidder", "analyst", "architect", "DBA"],
-		required: true
+      label: "Role",
+      component: "search",
+      value: "",
+      options: ["frontend", "backend", "sales", "bidder", "analyst", "architect", "DBA"],
+      required: true
     },
     gender: {
-		label: "Gender",
-		component: "radio",
-		value: "",
-		options: ["Male", "Female", "Other"]
-	},
+      label: "Gender",
+      component: "radio",
+      value: "",
+      options: ["Male", "Female", "Other"]
+    },
     qualification: {
-		label: "Highest Qualification",
-		component: "checkbox",
-		value: "", // INITIAL VALUE BLANK QUOTE ON CHECKBOX COMPONENT WILL ALLOW SINGLE CHECK AT A TIME.
-		options: ["Diploma", "B.Tech", "M.Tech"],
-		required: true
+      label: "Highest Qualification",
+      component: "checkbox",
+      value: "", // INITIAL VALUE BLANK QUOTE ON CHECKBOX COMPONENT WILL ALLOW SINGLE CHECK AT A TIME.
+      options: ["Diploma", "B.Tech", "M.Tech"],
+      required: true
     },
     site: {
-		label: "Preferred Site (multi select)",
-		component: "checkbox",
-		value: [], // INITIAL VALUE BLANK ARRAY ON CHECKBOX COMPONENT WILL ALLOW MULTI SELECT.
-		options: ["on-site", "remote"],
-		required: true
+      label: "Preferred Site (multi select)",
+      component: "checkbox",
+      value: [], // INITIAL VALUE BLANK ARRAY ON CHECKBOX COMPONENT WILL ALLOW MULTI SELECT.
+      options: ["on-site", "remote"],
+      required: true
     },
     skills: {
-		label: "Skills",
-		component: "multi-select",
-		value: [],
-		span: 12,
-		options: ["react", "angular", "node.js", "php"],
-		required: true
+      label: "Skills",
+      component: "multi-select",
+      value: [],
+      span: 12,
+      options: ["react", "angular", "node.js", "php"],
+      required: true
     },
     comment: {
-		label: "Comment",
-		component: "textarea",
-		value: "",
-		span: 12
-	}
+      label: "Comment",
+      component: "textarea",
+      value: "",
+      span: 12
+    }
   });
 
   return (
@@ -292,49 +291,49 @@ export default function JobApplication() {
 
 ## 👩‍💼 Example 4 — LogIn Form Schema (Real-world)
 
-```tsx 
-
+```tsx
 const schema = create({
-username: { 
-	label: "username", 
-	component: "text", 
-	value: "", 
-	autoFill: "email", 
-	required: true 
-},
-password: { 
-	label: "password", 
-	component: "password",
-	value: "", 
-	required: true 
-}}),
+  username: {
+    label: "username",
+    component: "text",
+    value: "",
+    autoFill: "email",
+    required: true
+  },
+  password: {
+    label: "password",
+    component: "password",
+    value: "",
+    required: true
+  }
+});
 ```
 
 ## 👩‍💼 Example 5 — SignUp Form Schema (Real-world)
 
-```tsx 
-
+```tsx
 const schema = create({
- name: {
-	 label: "Name", 
-	 component: "text", 
-	 value: "", 
-	 autoFill: "name", 
-	 required: true 
- },
- email: {
-	 label: "email", 
-	 component: "text", 
-	 value: "", 
-	 autoFill: "email", 
-	 required: true 
- },
-password: {
-	label: "password", 
-	component: "password", 
-	value: "", 
-	required: true 
-}}),
+  name: {
+    label: "Name",
+    component: "text",
+    value: "",
+    autoFill: "name",
+    required: true
+  },
+  email: {
+    label: "email",
+    component: "text",
+    value: "",
+    autoFill: "email",
+    required: true
+  },
+  password: {
+    label: "password",
+    component: "password",
+    value: "",
+    required: true
+  }
+});
 ```
 
 🧩 This example demonstrates:
@@ -344,8 +343,7 @@ password: {
 - **Multi-column layout** via `span`
 - Zero external UI dependency — all styling and alignment handled by Red Form
 
-![red form code snippet](https://crudios.com/images/red-form-code-suggestion.png)
-
+![red form code snippet](https://crudios.com/images/red-form-code-suggestion.webp)
 
 ---
 
@@ -353,33 +351,36 @@ password: {
 
 ---
 
-
 ### 💎 Common Props `available in all components`
+
 ---
+
 ```tsx
 {
  label: string;
   required?: boolean;
-  placeholder?: string; 
+  placeholder?: string;
   helperText?: ReactNode;
   information?: string;
-  disabled?: boolean; 
+  disabled?: boolean;
   span?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   validate?: ({ field, props, form }) => string[];
   hidden?: boolean;
   adorment?: Adorment;
 }
 ```
+
 Label is always mandatory.
 
 ### 🛡️ Validate Function
+
 The `validate function` expects from you to return string of array.
 
 ```tsx
 
 const schema = create({
 	field: {
-		component: "text"; 
+		component: "text";
 		value: "",
 		validate: ({field, props, form})=>{
 			const errors:string[] = [];
@@ -392,23 +393,28 @@ const schema = create({
 ```
 
 ### ⓘ Information
+
 The content of `information` will be shown as tooltip at the side of label.
 
 ### 🤝 Helper Text
+
 The content of `helperText` will be shown as below the input field.
 
 ### 🚫 Disabled
+
 if `disabled` is `true` then field will become readOnly can't edit that field.
 
 ### 👻 Hidden
+
 if `hidden` is `true` then field will not shown in the form can be used in spacial cases.
 
 ### 🤔 Placeholder
+
 The content of `placeholder` will be shown... Ok just guese it, I am not telling this.
 
 ### 📿Adorment
-Through `Adorment` You can add some element like `button`, `icons`, `div` at the start or end of the INPUT field.
 
+Through `Adorment` You can add some element like `button`, `icons`, `div` at the start or end of the INPUT field.
 
 ```tsx
 {
@@ -417,13 +423,14 @@ Through `Adorment` You can add some element like `button`, `icons`, `div` at the
 }
 
 ```
+
 ### 🗒️Text
 
 Text field is most commonly used to handel single line string value input.
 
 ```tsx
 {
-   component: "text"; 
+   component: "text";
   value: string; // Initial Value
   autoFill?: AutoFillField; // Browser supported AutoFill
   min?: number;  // minimum length
@@ -432,10 +439,12 @@ Text field is most commonly used to handel single line string value input.
 ```
 
 ### 🖹 TextArea
+
 Text Area is just a multiline text field.
+
 ```tsx
 {
-   component: "textarea"; 
+   component: "textarea";
   value: string; // Initial Value
   min?: number;  // minimum length
   max?: number; // maximum length
@@ -444,10 +453,12 @@ Text Area is just a multiline text field.
 ```
 
 ### 🖹 Number
+
 In Number Field you can only enter number.
+
 ```tsx
 {
-   component: "number"; 
+   component: "number";
   value: number; // Initial Value
   min?: number;  // minimum value
   max?: number; // maximum value
@@ -461,7 +472,7 @@ It rendered as password field, you can't see entered value.
 
 ```tsx
 {
-   component: "password"; 
+   component: "password";
   value: string; // Initial Value
   min?: number;  // minimum value
   max?: number; // maximum value
@@ -481,9 +492,10 @@ Select prop will be renderd as dropdown field.
 }
 ```
 
-
 ### 🔍 Search
+
 Search Field is a dropdown which is searchable.
+
 ```tsx
 {
   component: "search";
@@ -500,7 +512,7 @@ Tags can hold multiple user entered string values.
 
 ```tsx
 {
-  component: "tags"; 
+  component: "tags";
   value: string[]; // Initial Value
   min?: number;  // minimum value
   max?: number; // maximum value
@@ -513,7 +525,7 @@ Multi-Select is mixture of tags and search field, can pick searchable multiple v
 
 ```tsx
 {
-  component: "multi-select"; 
+  component: "multi-select";
   value: string[]; // Initial Value
   options: Option[]; // string[] or {label: string; value: string | number}[]
   min?: number;  // minimum number of selected values
@@ -522,16 +534,20 @@ Multi-Select is mixture of tags and search field, can pick searchable multiple v
 ```
 
 ### ⇆ Switch
+
 Switch are toogle button commonly used to pick boolean values.
+
 ```tsx
 {
-  component: "switch"; 
+  component: "switch";
   value: boolean; // Initial Value
 }
 ```
 
 ### 🔴 Radio
+
 Radio Group is used pick single value from option. good for 2 or 3 values.
+
 ```tsx
 {
   component: "radio";
@@ -542,10 +558,12 @@ Radio Group is used pick single value from option. good for 2 or 3 values.
 ```
 
 ### ─•──── Range
+
 Range component will be rendered as a slider.
+
 ```tsx
 {
-   component: "range"; 
+   component: "range";
   value: number; // Initial Value
   min?: number;  // minimum value
   max?: number; // maximum value
@@ -557,20 +575,23 @@ Range component will be rendered as a slider.
 
 ```tsx
 {
-   component: "color"; 
+   component: "color";
   value: string[]; // Initial Value (#ffffff, #ff0000)
 }
 ```
 
 ### 🌄 Image
+
 In image component you have to add onSelect prop to handel picked file and convert it into url.
+
 ```tsx
 {
-   component: "image"; 
+   component: "image";
   value: string; // Initial Value ( link or dataurl)
-  onSelect: (file: File) => Promise<string>; The uploader function 
+  onSelect: (file: File) => Promise<string>; The uploader function
 }
 ```
+
 ### ✅ Checkbox `Single Value`
 
 ```tsx
@@ -592,7 +613,9 @@ In image component you have to add onSelect prop to handel picked file and conve
   options:  Option[]; // string[] or { label: string; value: string | number }[]
 }
 ```
+
 ### 📅 Date
+
 The value pattern of Date is `2025-11-02` (YYYY-MM-DD).
 
 ```tsx
@@ -603,8 +626,11 @@ The value pattern of Date is `2025-11-02` (YYYY-MM-DD).
   max?: string;
 }
 ```
+
 ### 📅🕘 Date Time
+
 The value pattern of Date Time is `2025-11-02T14:20` (YYYY-MM-DDTHH:mm).
+
 ```tsx
 {
   component: "datetime";
@@ -613,7 +639,9 @@ The value pattern of Date Time is `2025-11-02T14:20` (YYYY-MM-DDTHH:mm).
   max?: string;
 }
 ```
+
 ### 🕘 Time
+
 The value pattern of time is `13:26` (HH:mm)
 
 ```tsx
@@ -626,6 +654,7 @@ The value pattern of time is `13:26` (HH:mm)
 ```
 
 ### 📅 Week
+
 The value pattern of week is `2025-32` (YYYY-WW) for 32th week of 2025.
 
 ```tsx
@@ -639,7 +668,7 @@ The value pattern of week is `2025-32` (YYYY-WW) for 32th week of 2025.
 
 ### 🗓 Month
 
-The value pattern of Month  is `2025-04` (YYYY-MM) for April.
+The value pattern of Month is `2025-04` (YYYY-MM) for April.
 
 ```tsx
 {
@@ -649,7 +678,9 @@ The value pattern of Month  is `2025-04` (YYYY-MM) for April.
   max?: string;
 }
 ```
+
 ### ✨ Custom
+
 Custom component will allow you to render anything in place of the form field.
 
 ```tsx
