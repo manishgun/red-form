@@ -56,10 +56,11 @@ export type SearchFieldProps = BaseField & {
 
 export type NumberFieldProps = BaseField & {
   component: "number";
-  value: number;
+  value: number | "";
   min?: number;
   max?: number;
   step?: number;
+  fraction?: number;
   adorment?: Adorment;
 };
 
@@ -164,10 +165,15 @@ export type SelectFieldProps = BaseField & {
   options: Option[];
 };
 
+interface MultiSelectFieldOnClickProps<T extends Schema, K extends keyof T> extends InputProps<T, K> {
+  item: string;
+}
+
 export type MultiSelectFieldProps = BaseField & {
   component: "multi-select";
   value: string[];
   options: Option[];
+  onClick?: <T extends Schema, K extends keyof T>({ field, props, form, item }: MultiSelectFieldOnClickProps<T, K>) => void;
 };
 
 export type TagsFieldProps = BaseField & {
@@ -268,6 +274,7 @@ export type FormProps<T extends Schema> = {
       submit?: string;
       delete?: string;
     };
+    infoIcon?: FormOptions["infoIcon"];
   };
   sx?: FormSX;
   onSubmit?: (values: Values<T>, form: FormInstance<T>) => void | Promise<void>;
@@ -300,6 +307,7 @@ export type FormOptions = {
   validateOn?: ValidateOnType;
   reInitialization?: boolean;
   onValidate?: () => void;
+  infoIcon?: ReactNode;
 };
 
 export interface FormInstance<T extends Schema> {

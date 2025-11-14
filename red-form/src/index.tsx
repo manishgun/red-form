@@ -134,9 +134,9 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
           if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field Lenght must be more than ${field.min}.`);
         }
 
-        if (field.component === "range") {
-          if ((value as number) > field.max) fieldErrors.push(`Field value must be less than ${field.max}.`);
-          if ((value as number) < field.min) fieldErrors.push(`Field value must be more than ${field.min}`);
+        if (field.component === "range" || field.component === "number") {
+          if (field.max !== undefined && (value as number) > field.max) fieldErrors.push(`Field value must be less than ${field.max}.`);
+          if (field.min !== undefined && (value as number) < field.min) fieldErrors.push(`Field value must be more than ${field.min}`);
         }
       }
     }
@@ -319,7 +319,7 @@ const Form = <T extends Schema>({
       <div className="red-form" style={{ ...sx.form }}>
         {(Object.entries(schema) as [string, T[keyof T]][]).map(([field, props]) => {
           props.disabled = Boolean(disabled) || Boolean(props.disabled) || Boolean(props.hidden);
-          return <Fragment key={field as string}>{!props.hidden && <InputContainer field={field} props={props} form={form} sx={sx} />}</Fragment>;
+          return <Fragment key={field as string}>{!props.hidden && <InputContainer field={field} props={props} form={form} sx={sx} options={options} />}</Fragment>;
         })}
         {disabled && <div style={{ width: "100%", height: "100%", position: "absolute", cursor: "default", pointerEvents: "all", zIndex: 999, inset: 0 }}></div>}
         {onSubmit && !disabled && (
@@ -364,7 +364,19 @@ const Form = <T extends Schema>({
   );
 };
 
-const InputContainer = <T extends Schema, K extends keyof T>({ field, props, form, sx }: { field: string; props: T[K]; form: FormInstance<T>; sx: FormSX }) => {
+const InputContainer = <T extends Schema, K extends keyof T>({
+  field,
+  props,
+  form,
+  sx,
+  options
+}: {
+  field: string;
+  props: T[K];
+  form: FormInstance<T>;
+  sx: FormSX;
+  options: FormProps<T>["options"];
+}) => {
   const error = form.errors[field];
   const style = useMemo(() => {
     return { gridColumn: props.span ? `span ${props.span}` : undefined, cursor: props.disabled ? "not-allowed" : undefined, ...sx.inputContainer };
@@ -384,13 +396,18 @@ const InputContainer = <T extends Schema, K extends keyof T>({ field, props, for
     <div className={`red-form-input-container ${error ? "red-form-error" : ""}`} style={style}>
       <div className="red-form-input-label-container" style={{ ...sx.inputLabelContainer }}>
         <label className={`red-form-input-label ${error ? "red-form-error" : ""}`} htmlFor={field as string} style={{ ...sx.inputLabel }}>
-          {props.label} <span className="red-form-error">{props.required && "*"}</span>
+          {props.label} <span className="red-form-error">{props.required && !props.disabled && "*"}</span>
         </label>
-        {props.information && (
+        {props.information && !props.disabled && (
           <div className="red-form-tooltip-container" style={{ ...sx.tooltipContainer }}>
-            <div className="red-form-info-icon" style={{ ...sx.tooltipInfoIcon }}>
-              i
-            </div>
+            {options && options.infoIcon ? (
+              options.infoIcon
+            ) : (
+              <div className="red-form-info-icon" style={{ ...sx.tooltipInfoIcon }}>
+                ?
+              </div>
+            )}
+
             <div className="red-form-tooltip" style={{ ...sx.tooltip }}>
               {props.information}
             </div>
@@ -398,25 +415,27 @@ const InputContainer = <T extends Schema, K extends keyof T>({ field, props, for
         )}
       </div>
       <Input field={field} props={props} form={form} error={error} sx={sx} />
-      {error && !props.disabled ? (
-        <ul className={`red-form-error-list ${error ? "red-form-error" : ""}`} style={{ ...sx.errorList }}>
-          {error.map(content => {
-            return (
-              <li key={content} style={{ ...sx.errorItem }}>
-                {content}
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <>
-          {props.helperText !== undefined && (
-            <p className={`red-form-helper-text ${error ? "red-form-error" : ""}`} style={{ ...sx.helperText }}>
-              {props.helperText}
-            </p>
-          )}
-        </>
-      )}
+      <div className="red-form-helper-area">
+        {error && !props.disabled ? (
+          <ul className={`red-form-error-list ${error ? "red-form-error" : ""}`} style={{ ...sx.errorList }}>
+            {error.map(content => {
+              return (
+                <li key={content} style={{ ...sx.errorItem }}>
+                  {content}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <>
+            {props.helperText !== undefined && (
+              <p className={`red-form-helper-text ${error ? "red-form-error" : ""}`} style={{ ...sx.helperText }}>
+                {props.helperText}
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
@@ -561,9 +580,12 @@ const NumberField = <T extends Schema, K extends keyof T>({ field, props, form, 
       step={props.step}
       className={`red-form-input ${error ? "red-form-error" : ""}`}
       onChange={e => {
-        const val = parseFloat(e.target.value);
+        let val = parseFloat(e.target.value);
         if (isNaN(val)) form.setFieldValue(field, "");
-        else form.setFieldValue(field, val);
+        else {
+          if (typeof props.fraction === "number") val = Number(val.toFixed(props.fraction));
+          form.setFieldValue(field, val);
+        }
       }}
     />
   );
@@ -728,6 +750,8 @@ const RadioField = <T extends Schema, K extends keyof T>({ field, props, form, e
 
         return (
           <div className="red-form-radio-field-item" key={value}>
+            {props.disabled && <div style={{ width: "40px", height: "40px", position: "absolute" }} />}
+
             <input
               type="radio"
               readOnly
@@ -736,7 +760,6 @@ const RadioField = <T extends Schema, K extends keyof T>({ field, props, form, e
               checked={value === form["values"][field]}
               value={value || ""}
               onClick={toggle}
-              disabled={props.disabled}
               onKeyUp={e => {
                 e.preventDefault();
                 if (e.key === " ") toggle();
@@ -929,6 +952,7 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
   }, [props.options]);
 
   const values = useMemo(() => Object.keys(map), [map]);
+
   const filterd = useMemo(() => {
     return values
       .filter(item => {
@@ -947,7 +971,17 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
       <div className="red-form-multi-select-container">
         {((form.values[field] as string[]) || []).map(item => {
           return (
-            <div key={item} className="red-form-multi-select-item">
+            <div
+              key={item}
+              onClick={() => {
+                if (typeof props.onClick === "function") {
+                  // @ts-ignore
+                  props.onClick({ field, props, form, error, item });
+                }
+              }}
+              style={{ cursor: typeof props.onClick === "function" ? "pointer" : "default" }}
+              className="red-form-multi-select-item"
+            >
               <span>{map[item]}</span>
               <span
                 className="red-form-multi-select-item-cross"
