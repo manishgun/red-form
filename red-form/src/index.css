@@ -90,11 +90,9 @@
 }
 
 .red-form-tooltip {
-  position: absolute;
-  right: 25px;
-  top: 5px;
+  position: fixed;
   text-align: right;
-  transform: translateY(-50%);
+  transform: translate(15%, -30%);
   white-space: normal;
   background: var(--red-form-color-text);
   color: var(--red-form-color-background);
@@ -103,17 +101,17 @@
   padding: 10px 20px;
   width: fit-content;
   white-space: nowrap;
-  opacity: 0;
+  opacity: 1;
   pointer-events: none;
   transition: opacity 0.4s ease, transform 0.3s ease;
   z-index: 50;
-  box-shadow: 0 1px 12px var(--red-form-color-text);
+  box-shadow: none;
 }
 
 .red-form-tooltip-container:hover .red-form-tooltip {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(-55%);
+  /* transform: translateY(-55%); */
 }
 
 .red-form-info-icon {
@@ -208,7 +206,7 @@
 .red-form-textarea {
   padding: 12px;
   resize: vertical;
-  min-height: 200px;
+  min-height: 150px;
 }
 
 .red-form-helper-text {

@@ -36,10 +36,6 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
   const [validating, setValidating] = useState<boolean>(false);
   const context = useContext(FormContext);
 
-  useEffect(() => {
-    setSchema(s);
-  }, [s]);
-
   const initialValues = useMemo(() => {
     const values = {} as Values<T>;
     (Object.entries(schema) as [keyof T, T[keyof T]][]).forEach(([key, props]) => {
@@ -60,6 +56,7 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
 
   const setFieldValue = <K extends keyof T>(field: K, value: Values<T>[K]) => {
     // if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+    if (activeField !== field) set_active_field(field);
     if (!touched[field] && value !== "") setFieldTouched(field, true);
     setValues(prev => ({ ...prev, [field]: value }));
   };
@@ -123,12 +120,12 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
       if (validating === false) setValidating(true);
     }
 
-    if (field.disabled) return fieldErrors;
+    if (field.disabled || field.hidden) return fieldErrors;
     if (field.validate) field.validate({ field: key as string, props: field, form }).forEach(error => fieldErrors.push(error));
     else {
       if (field.required && (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
         fieldErrors.push(`filed is required.`);
-      } else {
+      } else if (!(value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
         if (field.component === "text" || field.component === "textarea") {
           if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Field Length must be less than ${field.max}.`);
           if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field Lenght must be more than ${field.min}.`);
@@ -257,6 +254,26 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
     };
   }, []);
 
+  useEffect(() => {
+    // const fields = Object.keys(s);
+
+    // const common_funtional_props_fields = ["disabled", "helperText", "hidden", "label", "placeholder", "required", "span"] as const;
+
+    // const schema = fields.reduce((previous, current) => {
+    //   const field = s[current];
+    //   common_funtional_props_fields.forEach(key => {
+    //     // @ts-ignore
+    //     if (typeof field[key] === "function") field[key] = field[key]({ field: current, props: field, form });
+    //   });
+
+    //   previous[current] = field
+
+    //   return previous;
+    // }, {} as T);
+
+    setSchema(s);
+  }, [s]);
+
   return form;
 }
 
@@ -318,8 +335,12 @@ const Form = <T extends Schema>({
       )}
       <div className="red-form" style={{ ...sx.form }}>
         {(Object.entries(schema) as [string, T[keyof T]][]).map(([field, props]) => {
-          props.disabled = Boolean(disabled) || Boolean(props.disabled) || Boolean(props.hidden);
-          return <Fragment key={field as string}>{!props.hidden && <InputContainer field={field} props={props} form={form} sx={sx} options={options} />}</Fragment>;
+          const is_disabled = Boolean(disabled) || Boolean(props.disabled) || Boolean(props.hidden);
+          return (
+            <Fragment key={field as string}>
+              {!props.hidden && <InputContainer field={field} props={{ ...props, disabled: is_disabled }} form={form} sx={sx} options={options} />}
+            </Fragment>
+          );
         })}
         {disabled && <div style={{ width: "100%", height: "100%", position: "absolute", cursor: "default", pointerEvents: "all", zIndex: 999, inset: 0 }}></div>}
         {onSubmit && !disabled && (
@@ -377,6 +398,7 @@ const InputContainer = <T extends Schema, K extends keyof T>({
   sx: FormSX;
   options: FormProps<T>["options"];
 }) => {
+  const [position, setPosition] = useState<{ x: number; y: number }>();
   const error = form.errors[field];
   const style = useMemo(() => {
     return { gridColumn: props.span ? `span ${props.span}` : undefined, cursor: props.disabled ? "not-allowed" : undefined, ...sx.inputContainer };
@@ -399,7 +421,17 @@ const InputContainer = <T extends Schema, K extends keyof T>({
           {props.label} <span className="red-form-error">{props.required && !props.disabled && "*"}</span>
         </label>
         {props.information && !props.disabled && (
-          <div className="red-form-tooltip-container" style={{ ...sx.tooltipContainer }}>
+          <div
+            className="red-form-tooltip-container"
+            style={{ ...sx.tooltipContainer }}
+            onMouseEnter={e => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              setPosition({ x: rect.left, y: rect.top });
+            }}
+            onMouseLeave={e => {
+              setPosition(undefined);
+            }}
+          >
             {options && options.infoIcon ? (
               options.infoIcon
             ) : (
@@ -407,10 +439,11 @@ const InputContainer = <T extends Schema, K extends keyof T>({
                 ?
               </div>
             )}
-
-            <div className="red-form-tooltip" style={{ ...sx.tooltip }}>
-              {props.information}
-            </div>
+            {position && (
+              <div className="red-form-tooltip" style={{ ...sx.tooltip, top: position.y, left: position.x }}>
+                {props.information}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -562,8 +595,35 @@ const PasswordField = <T extends Schema, K extends keyof T>({ field, props, form
           setShow(pre => !pre);
         }}
       >
-        {show ? "hide" : "show"}
-        {/* 👁 */}
+        {show ? (
+          <svg fill="#000000" width="26" height="26" viewBox="0 0 36 36" version="1.1" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+            <title>eye-line</title>
+            <path
+              d="M33.62,17.53c-3.37-6.23-9.28-10-15.82-10S5.34,11.3,2,17.53L1.72,18l.26.48c3.37,6.23,9.28,10,15.82,10s12.46-3.72,15.82-10l.26-.48ZM17.8,26.43C12.17,26.43,7,23.29,4,18c3-5.29,8.17-8.43,13.8-8.43S28.54,12.72,31.59,18C28.54,23.29,23.42,26.43,17.8,26.43Z"
+              className="clr-i-outline clr-i-outline-path-1"
+            />
+            <path
+              d="M18.09,11.17A6.86,6.86,0,1,0,25,18,6.86,6.86,0,0,0,18.09,11.17Zm0,11.72A4.86,4.86,0,1,1,23,18,4.87,4.87,0,0,1,18.09,22.89Z"
+              className="clr-i-outline clr-i-outline-path-2"
+            />
+            <rect x="0" y="0" width="36" height="36" fill-opacity="0" />
+          </svg>
+        ) : (
+          <svg width="26" height="26" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <title>eye-close-solid</title>
+            <g id="Layer_2" data-name="Layer 2">
+              <g id="invisible_box" data-name="invisible box">
+                <rect width="48" height="48" fill="none" />
+              </g>
+              <g id="icons_Q2" data-name="icons Q2">
+                <g>
+                  <path d="M45.3,22.1C43.2,19.5,35.4,11,24,11a23.4,23.4,0,0,0-3.8.3L39.9,31.1a30.1,30.1,0,0,0,5.4-5.2A3,3,0,0,0,45.3,22.1Z" />
+                  <path d="M41.1,38.3,29.4,26.6A5.9,5.9,0,0,1,24,30a6,6,0,0,1-6-6,5.9,5.9,0,0,1,3.4-5.4L9.7,6.9A2,2,0,0,0,6.9,9.7l4.8,4.8a31.4,31.4,0,0,0-9,7.6,3,3,0,0,0,0,3.8C4.8,28.5,12.6,37,24,37a25.2,25.2,0,0,0,8.5-1.6l5.8,5.7a2,2,0,1,0,2.8-2.8Z" />
+                </g>
+              </g>
+            </g>
+          </svg>
+        )}
       </div>
     </div>
   );
@@ -571,6 +631,7 @@ const PasswordField = <T extends Schema, K extends keyof T>({ field, props, form
 
 const NumberField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "number") return null;
+
   return (
     <input
       type="number"
