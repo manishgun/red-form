@@ -1,4 +1,18 @@
-import { Errors, FormContextProps, FormInstance, FormProps, InputProps, ModalProps, Schema, Touched, Values, FormOptions, FormSX } from "./declarations";
+import {
+  Errors,
+  FormContextProps,
+  FormInstance,
+  FormProps,
+  InputProps,
+  ModalProps,
+  Schema,
+  Touched,
+  Values,
+  FormOptions,
+  FormSX,
+  StepConfig,
+  StepperFormProps
+} from "./declarations";
 import React, { createContext, Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 
@@ -124,16 +138,45 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
     if (field.validate) field.validate({ field: key as string, props: field, form }).forEach(error => fieldErrors.push(error));
     else {
       if (field.required && (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
-        fieldErrors.push(`filed is required.`);
+        fieldErrors.push(`Field is required.`);
       } else if (!(value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
+        // Text and Textarea validation
         if (field.component === "text" || field.component === "textarea") {
-          if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Field Length must be less than ${field.max}.`);
-          if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field Lenght must be more than ${field.min}.`);
+          if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Field length must be less than or equal to ${field.max}.`);
+          if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field length must be more than or equal to ${field.min}.`);
         }
 
+        // Email validation
+        if (field.component === "email") {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value as string)) {
+            fieldErrors.push(`Please enter a valid email address.`);
+          }
+        }
+
+        // Password validation
+        if (field.component === "password") {
+          if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Password length must be less than or equal to ${field.max}.`);
+          if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Password must be at least ${field.min} characters.`);
+        }
+
+        // Number and Range validation
         if (field.component === "range" || field.component === "number") {
-          if (field.max !== undefined && (value as number) > field.max) fieldErrors.push(`Field value must be less than ${field.max}.`);
-          if (field.min !== undefined && (value as number) < field.min) fieldErrors.push(`Field value must be more than ${field.min}`);
+          if (field.max !== undefined && (value as number) > field.max) fieldErrors.push(`Field value must be less than or equal to ${field.max}.`);
+          if (field.min !== undefined && (value as number) < field.min) fieldErrors.push(`Field value must be more than or equal to ${field.min}.`);
+        }
+
+        // Telephone validation
+        if (field.component === "telephone") {
+          const phoneStr = String(value);
+          if (field.max !== undefined && phoneStr.length > field.max) fieldErrors.push(`Phone number must be less than or equal to ${field.max} digits.`);
+          if (field.min !== undefined && phoneStr.length < field.min) fieldErrors.push(`Phone number must be at least ${field.min} digits.`);
+        }
+
+        // Date validation
+        if (field.component === "date" || field.component === "datetime" || field.component === "time") {
+          if (field.min !== undefined && value < field.min) fieldErrors.push(`Date must be after ${field.min}.`);
+          if (field.max !== undefined && value > field.max) fieldErrors.push(`Date must be before ${field.max}.`);
         }
       }
     }
@@ -168,14 +211,13 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
     let result: any;
 
     if (options && options.validateOn && options.validateOn.includes("submit")) {
-      const no_error = form.validate();
+      const no_error = validate();
       if (no_error) result = onSubmit(values);
     } else result = onSubmit(values);
 
     if (isPromise(result)) {
       setSubmitting(true);
-      // @ts-ignore
-      result.finally(() => {
+      (result as Promise<void>).finally(() => {
         if (context && typeof context.validate === "function") context.validate(false);
 
         setSubmitting(false);
@@ -305,7 +347,10 @@ const Form = <T extends Schema>({
   }, [form.errors]);
   useEffect(() => {
     if (onChange) onChange(form.values, form);
-    if (!disabled && options && options.validateOn && options.validateOn.includes("change")) form.validate();
+    const has_errors = Object.values(form.errors).some(e => e && e.length > 0);
+    if (!disabled && (options?.validateOn?.includes("change") || has_errors)) {
+      form.validate();
+    }
   }, [form.values]);
   useEffect(() => {
     if (onBlur) onBlur(form.touched, form);
@@ -321,7 +366,7 @@ const Form = <T extends Schema>({
       onMouseDown={() => {
         form.setFieldActive(undefined);
       }}
-      style={{ ...sx.conteiner }}
+      style={{ ...sx.container }}
     >
       {title && (
         <div className="red-form-title" style={{ ...sx.title }}>
@@ -590,38 +635,52 @@ const PasswordField = <T extends Schema, K extends keyof T>({ field, props, form
         style={{ position: "absolute", opacity: 0, top: "-30px", pointerEvents: "none", cursor: "none" }}
       />
       <div
-        className={`red-form-password-eye-icon inactive`}
+        className="red-form-password-eye-icon"
         onClick={() => {
           setShow(pre => !pre);
         }}
       >
         {show ? (
-          <svg fill="#000000" width="26" height="26" viewBox="0 0 36 36" version="1.1" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-            <title>eye-line</title>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
-              d="M33.62,17.53c-3.37-6.23-9.28-10-15.82-10S5.34,11.3,2,17.53L1.72,18l.26.48c3.37,6.23,9.28,10,15.82,10s12.46-3.72,15.82-10l.26-.48ZM17.8,26.43C12.17,26.43,7,23.29,4,18c3-5.29,8.17-8.43,13.8-8.43S28.54,12.72,31.59,18C28.54,23.29,23.42,26.43,17.8,26.43Z"
-              className="clr-i-outline clr-i-outline-path-1"
+              d="M12 5C5.63636 5 2 12 2 12C2 12 5.63636 19 12 19C18.3636 19 22 12 22 12C22 12 18.3636 5 12 5Z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
             <path
-              d="M18.09,11.17A6.86,6.86,0,1,0,25,18,6.86,6.86,0,0,0,18.09,11.17Zm0,11.72A4.86,4.86,0,1,1,23,18,4.87,4.87,0,0,1,18.09,22.89Z"
-              className="clr-i-outline clr-i-outline-path-2"
+              d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
-            <rect x="0" y="0" width="36" height="36" fill-opacity="0" />
           </svg>
         ) : (
-          <svg width="26" height="26" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-            <title>eye-close-solid</title>
-            <g id="Layer_2" data-name="Layer 2">
-              <g id="invisible_box" data-name="invisible box">
-                <rect width="48" height="48" fill="none" />
-              </g>
-              <g id="icons_Q2" data-name="icons Q2">
-                <g>
-                  <path d="M45.3,22.1C43.2,19.5,35.4,11,24,11a23.4,23.4,0,0,0-3.8.3L39.9,31.1a30.1,30.1,0,0,0,5.4-5.2A3,3,0,0,0,45.3,22.1Z" />
-                  <path d="M41.1,38.3,29.4,26.6A5.9,5.9,0,0,1,24,30a6,6,0,0,1-6-6,5.9,5.9,0,0,1,3.4-5.4L9.7,6.9A2,2,0,0,0,6.9,9.7l4.8,4.8a31.4,31.4,0,0,0-9,7.6,3,3,0,0,0,0,3.8C4.8,28.5,12.6,37,24,37a25.2,25.2,0,0,0,8.5-1.6l5.8,5.7a2,2,0,1,0,2.8-2.8Z" />
-                </g>
-              </g>
-            </g>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 3L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M10.584 10.587C10.2087 10.962 9.99778 11.4708 9.99756 12.0013C9.99734 12.5319 10.2078 13.0408 10.5828 13.4162C10.9578 13.7915 11.4666 14.0024 11.9971 14.0027C12.5277 14.0029 13.0366 13.7924 13.412 13.4174"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M9.363 5.365C10.2204 5.11972 11.1082 4.99684 12 5C18.364 5 22 12 22 12C21.6761 12.6456 21.2942 13.2574 20.859 13.829M14.12 14.12C13.7596 14.4822 13.3297 14.7662 12.8564 14.9551C12.3831 15.1439 11.876 15.2338 11.3664 15.2191C10.8567 15.2044 10.3554 15.0854 9.89372 14.8695C9.43206 14.6536 9.01971 14.3453 8.68233 13.9623C8.34495 13.5793 8.09004 13.1294 7.93217 12.6408C7.7743 12.1523 7.71686 11.6354 7.76375 11.1232C7.81064 10.611 7.96088 10.1143 8.20546 9.66311C8.45004 9.21193 8.78382 8.81689 9.188 8.5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M6.61 6.61C4.62125 7.96462 3.02987 9.82526 2 12C2 12 5.636 19 12 19C13.6975 19.0032 15.3683 18.5945 16.88 17.81"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         )}
       </div>
@@ -715,15 +774,18 @@ const SelectField = <T extends Schema, K extends keyof T>({ field, props, form, 
   if (props.component !== "select") return null;
 
   const map = useMemo(() => {
-    return props.options.reduce((previous, current) => {
-      if (typeof current === "string") {
-        previous[current] = current;
-      } else {
-        previous[String(current.value)] = current.value;
-      }
+    return props.options.reduce(
+      (previous, current) => {
+        if (typeof current === "string") {
+          previous[current] = current;
+        } else {
+          previous[String(current.value)] = current.value;
+        }
 
-      return previous;
-    }, {} as Record<string, string | number>);
+        return previous;
+      },
+      {} as Record<string, string | number>
+    );
   }, [props.options]);
 
   return (
@@ -861,11 +923,13 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
   const [selected_index, set_selected_index] = useState(0);
   const [input, setInput] = useState("");
   const [show_suggestions, set_show_suggestions] = useState(false);
+  const [previous_label, set_previous_label] = useState("");
+  const [is_dirty, set_is_dirty] = useState(false);
 
   const value = form.values[field];
 
   const reInitialization = () => {
-    if ((value !== null || value !== "") && input === "") {
+    if (value !== null && value !== undefined && value !== "" && input === "") {
       const match = props.options.find(option => {
         if (typeof option === "string") {
           return option === value;
@@ -909,10 +973,6 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
   useEffect(reInitialization, [value]);
 
   useEffect(() => {
-    if (form.touched[field]) exactMatch();
-  }, [input]);
-
-  useEffect(() => {
     if (props.reloadOptions !== false) reInitialization();
   }, [props.options]);
 
@@ -940,15 +1000,27 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
         placeholder={props.placeholder || `Select ${props.label}`}
         value={input}
         className={`red-form-input ${error ? "red-form-error" : ""}`}
+        onBlur={() => {
+          if (!is_dirty && previous_label !== "") {
+            setInput(previous_label);
+          } else {
+            exactMatch();
+          }
+          setTimeout(() => set_show_suggestions(false), 200);
+        }}
         onKeyDown={e => {
+          if (!["ArrowDown", "ArrowUp", "Enter", "Tab", "Escape"].includes(e.key)) {
+            set_is_dirty(true);
+          }
           if (e.key === "Enter") {
             e.preventDefault();
             if (filterd[selected_index]) {
-              if (typeof filterd[selected_index] === "string") {
-                setInput(filterd[selected_index]);
-              } else {
-                setInput(filterd[selected_index]["label"]);
-              }
+              const item = filterd[selected_index];
+              const label = typeof item === "string" ? item : item.label;
+              const value = typeof item === "string" ? item : item.value;
+              setInput(label);
+              form.setFieldValue(field, value);
+              set_show_suggestions(false);
             }
           } else if (e.key === "ArrowDown") {
             e.preventDefault();
@@ -962,14 +1034,31 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
         }}
         onChange={e => {
           setInput(e.target.value);
+          set_is_dirty(true);
           if (show_suggestions === false) set_show_suggestions(true);
         }}
         onClick={() => {
+          set_previous_label(input);
+          setInput("");
+          set_is_dirty(false);
           set_show_suggestions(true);
           if (!form.touched[field]) form.setFieldTouched(field, true);
         }}
       />
-      {form.activeField !== field && !props.disabled && <div className="red-form-search-field-nav-arrow">⏷</div>}
+      {!props.disabled && (
+        <div
+          className="red-form-search-field-nav-arrow"
+          onClick={() => {
+            if (form.activeField !== field) {
+              form.setFieldActive(field);
+            }
+            set_show_suggestions(!show_suggestions);
+          }}
+          style={{ cursor: "pointer", pointerEvents: "auto" }}
+        >
+          ⏷
+        </div>
+      )}
       {show && (
         <ul className="red-form-search-field-suggestion-container" style={{}}>
           {filterd.map((item, index) => {
@@ -983,7 +1072,8 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
                   e.stopPropagation();
                   e.preventDefault();
                   setInput(label);
-                  // form.setFieldValue(field, value);
+                  form.setFieldValue(field, value);
+                  set_show_suggestions(false);
                 }}
               >
                 {label}
@@ -1002,14 +1092,17 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
   const [selected_index, set_selected_index] = useState(0);
 
   const map = useMemo(() => {
-    return props.options.reduce((previous, current) => {
-      if (typeof current === "string") {
-        previous[current] = current;
-      } else {
-        previous[current.value] = current.label;
-      }
-      return previous;
-    }, {} as Record<string, string>);
+    return props.options.reduce(
+      (previous, current) => {
+        if (typeof current === "string") {
+          previous[current] = current;
+        } else {
+          previous[current.value] = current.label;
+        }
+        return previous;
+      },
+      {} as Record<string, string>
+    );
   }, [props.options]);
 
   const values = useMemo(() => Object.keys(map), [map]);
@@ -1018,10 +1111,11 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
     return values
       .filter(item => {
         if (((form.values[field] as string[]) || []).includes(item)) return false;
-        return item.toLowerCase().includes(input.toLowerCase());
+        // Search by label instead of value
+        return map[item].toLowerCase().includes(input.toLowerCase());
       })
       .slice(0, 3);
-  }, [input, values, form.values[field]]);
+  }, [input, values, form.values[field], map]);
 
   useEffect(() => {
     set_selected_index(0);
@@ -1080,7 +1174,7 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
             if (e.key === "Enter") {
               e.preventDefault();
               if (filterd[selected_index]) {
-                form.setFieldValue(field, [...(form.values[field] as string[]), filterd[selected_index]]);
+                form.setFieldValue(field, [...((form.values[field] as string[]) || []), filterd[selected_index]]);
                 setInput("");
               }
             } else if (e.key === "ArrowDown") {
@@ -1092,7 +1186,7 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
               if (selected_index === 0) set_selected_index(filterd.length - 1);
               else set_selected_index(selected_index - 1);
             } else if (e.key === "Backspace" && input === "") {
-              form.setFieldValue(field, [...(form.values[field] as string[])].slice(0, -1));
+              form.setFieldValue(field, [...((form.values[field] as string[]) || [])].slice(0, -1));
             }
           }}
           type="text"
@@ -1108,7 +1202,7 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
               onMouseDown={e => {
                 e.stopPropagation();
                 e.preventDefault();
-                form.setFieldValue(field, [...(form.values[field] as string[]), item]);
+                form.setFieldValue(field, [...((form.values[field] as string[]) || []), item]);
                 setInput("");
               }}
             >
@@ -1126,7 +1220,7 @@ const TagsField = <T extends Schema, K extends keyof T>({ field, props, form, er
   const [input, setInput] = useState<string>("");
   return (
     <div className="red-form-tags-container">
-      {(form.values[field] as string[]).map(item => {
+      {((form.values[field] as string[]) || []).map(item => {
         return (
           <div key={item} className="red-form-tags-item">
             <span>{item}</span>
@@ -1135,7 +1229,7 @@ const TagsField = <T extends Schema, K extends keyof T>({ field, props, form, er
               onClick={() => {
                 form.setFieldValue(
                   field,
-                  (form.values[field] as string[]).filter((_item: string) => {
+                  ((form.values[field] as string[]) || []).filter((_item: string) => {
                     return _item !== item;
                   })
                 );
@@ -1150,7 +1244,12 @@ const TagsField = <T extends Schema, K extends keyof T>({ field, props, form, er
         value={input}
         onChange={e => {
           if (e.target.value.endsWith(",")) {
-            form.setFieldValue(field, [...(form.values[field] as string[]), input.trim()]);
+            const trimmedInput = input.trim();
+            const currentTags = (form.values[field] as string[]) || [];
+            // Prevent duplicate tags
+            if (trimmedInput && !currentTags.includes(trimmedInput)) {
+              form.setFieldValue(field, [...currentTags, trimmedInput]);
+            }
             setInput("");
           } else setInput(e.target.value);
         }}
@@ -1159,10 +1258,15 @@ const TagsField = <T extends Schema, K extends keyof T>({ field, props, form, er
         onKeyDown={e => {
           if (e.key === "Enter") {
             e.preventDefault();
-            form.setFieldValue(field, [...(form.values[field] as string[]), input.trim()]);
+            const trimmedInput = input.trim();
+            const currentTags = (form.values[field] as string[]) || [];
+            // Prevent duplicate tags
+            if (trimmedInput && !currentTags.includes(trimmedInput)) {
+              form.setFieldValue(field, [...currentTags, trimmedInput]);
+            }
             setInput("");
           } else if (e.key === "Backspace" && input === "") {
-            form.setFieldValue(field, [...(form.values[field] as string[])].slice(0, -1));
+            form.setFieldValue(field, [...((form.values[field] as string[]) || [])].slice(0, -1));
           }
         }}
         name={field as string}
@@ -1387,5 +1491,156 @@ export const create = <T extends Schema>(schema: T) => {
   return schema;
 };
 
+// --- StepperForm Component ---
+
+export const StepperForm = <T extends Schema[]>({ steps, title, description, onComplete, onStepChange, options = {}, sx = {} }: StepperFormProps<T>) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [stepData, setStepData] = useState<any[]>(steps.map(() => ({})));
+  const [completedSteps, setCompletedSteps] = useState<boolean[]>(steps.map(() => false));
+
+  const currentStepConfig = steps[currentStep];
+  const isLastStep = currentStep === steps.length - 1;
+  const isFirstStep = currentStep === 0;
+
+  const handleNext = async (values: any) => {
+    // Save current step data
+    const newStepData = [...stepData];
+    newStepData[currentStep] = values;
+    setStepData(newStepData);
+
+    // Mark step as completed
+    const newCompletedSteps = [...completedSteps];
+    newCompletedSteps[currentStep] = true;
+    setCompletedSteps(newCompletedSteps);
+
+    if (isLastStep) {
+      // All steps completed, call onComplete
+      await onComplete(newStepData as any);
+    } else {
+      // Move to next step
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      if (onStepChange) onStepChange(nextStep);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (!isFirstStep) {
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep);
+      if (onStepChange) onStepChange(prevStep);
+    }
+  };
+
+  const handleSkip = () => {
+    if (currentStepConfig.optional && !isLastStep) {
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      if (onStepChange) onStepChange(nextStep);
+    }
+  };
+
+  const goToStep = (step: number) => {
+    if (step >= 0 && step < steps.length) {
+      setCurrentStep(step);
+      if (onStepChange) onStepChange(step);
+    }
+  };
+
+  // Merge saved data with schema defaults for current step
+  const schemaWithSavedData = useMemo(() => {
+    const schema = { ...currentStepConfig.schema };
+    const savedData = stepData[currentStep];
+
+    if (savedData && Object.keys(savedData).length > 0) {
+      Object.keys(schema).forEach(key => {
+        if (savedData[key] !== undefined) {
+          (schema as any)[key] = { ...schema[key], value: savedData[key] };
+        }
+      });
+    }
+
+    return schema;
+  }, [currentStep, currentStepConfig.schema, stepData]);
+
+  return (
+    <div className="red-form-stepper-container" style={{ ...sx.container }}>
+      {/* Header */}
+      {title && (
+        <div className="red-form-title" style={{ ...sx.title }}>
+          {title}
+        </div>
+      )}
+      {description && (
+        <p className="red-form-description" style={{ ...sx.description }}>
+          {description}
+        </p>
+      )}
+
+      {/* Step Indicator */}
+      <div className="red-form-stepper-indicator">
+        {steps.map((step, index) => {
+          const isActive = index === currentStep;
+          const isCompleted = completedSteps[index];
+          const isClickable = index < currentStep || isCompleted;
+
+          return (
+            <div
+              key={index}
+              className={`red-form-stepper-step ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""}`}
+              onClick={() => isClickable && goToStep(index)}
+              style={{ cursor: isClickable ? "pointer" : "default" }}
+            >
+              <div className="red-form-stepper-step-circle">
+                {isCompleted ? <span className="red-form-stepper-check">✓</span> : options.showStepNumbers !== false ? index + 1 : <span className="red-form-stepper-dot" />}
+              </div>
+              <div className="red-form-stepper-step-label">
+                <div className="red-form-stepper-step-title">{step.label}</div>
+                {step.description && <div className="red-form-stepper-step-description">{step.description}</div>}
+              </div>
+              {index < steps.length - 1 && <div className="red-form-stepper-connector" />}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Current Step Form */}
+      <div className="red-form-stepper-content">
+        <Form
+          key={`step-${currentStep}`}
+          schema={schemaWithSavedData}
+          onSubmit={handleNext}
+          options={{
+            validateOn: options.validateOnNext ? ["submit"] : undefined,
+            buttons: {
+              submit: isLastStep ? options.buttons?.complete || "Complete" : options.buttons?.next || "Next"
+            }
+          }}
+          sx={sx}
+        />
+
+        {/* Custom Navigation */}
+        <div className="red-form-stepper-navigation">
+          {!isFirstStep && (
+            <button type="button" onClick={handlePrevious} className="red-form-button red-form-reset-button">
+              {options.buttons?.previous || "← Previous"}
+            </button>
+          )}
+          {currentStepConfig.optional && options.allowSkip && !isLastStep && (
+            <button type="button" onClick={handleSkip} className="red-form-button red-form-reset-button" style={{ marginLeft: "auto" }}>
+              {options.buttons?.skip || "Skip →"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="red-form-stepper-progress-bar">
+        <div className="red-form-stepper-progress-fill" style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }} />
+      </div>
+    </div>
+  );
+};
+
 export default Form;
-export type { Schema, FormSX };
+export type { Schema, FormSX, StepConfig, StepperFormProps };

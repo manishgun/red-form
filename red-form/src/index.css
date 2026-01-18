@@ -1,3 +1,5 @@
+@import "./stepper.css";
+
 /* :root {
   --red-form-color-primary: #432eff;
   --red-form-color-primary-dark: #3024d8;
@@ -15,41 +17,46 @@
 } */
 
 :root {
-  --red-form-color-primary: #e28800;
-  --red-form-color-secondary: #ff7301;
+  --red-form-color-primary: #2563eb;
+  --red-form-color-primary-hover: #1d4ed8;
+  --red-form-color-secondary: #f59e0b;
   --red-form-color-background: #ffffff;
-  --red-form-color-text: #000000;
-  /* Slightly lighter version of text color */
-  --red-form-color-text-secondary: color-mix(in srgb, var(--red-form-color-text) 70%, var(--red-form-color-background) 30%);
-  --red-form-color-text-inactive: color-mix(in srgb, var(--red-form-color-text-secondary) 40%, var(--red-form-color-background) 60%);
-
-  --red-form-color-disabled: #f0f0f0;
-  --red-form-color-error: #ff0404;
-  --red-form-color-shadow: #c5c5c525;
-  --red-form-color-shadow-dark: #e2e2e27c;
+  --red-form-color-text: #1f2937;
+  --red-form-color-text-secondary: #6b7280;
+  --red-form-color-text-inactive: #9ca3af;
+  --red-form-color-border: #e5e7eb;
+  --red-form-color-border-focus: #3b82f6;
+  --red-form-color-disabled: #f3f4f6;
+  --red-form-color-error: #dc2626;
+  --red-form-color-error-bg: #fef2f2;
+  --red-form-color-shadow: rgba(0, 0, 0, 0.05);
+  --red-form-color-shadow-md: rgba(0, 0, 0, 0.1);
+  --red-form-color-shadow-lg: rgba(0, 0, 0, 0.15);
 }
 
-.red-form-conteiner {
+.red-form-container {
   display: block;
   width: 100%;
-  border: 40px solid color-mix(in srgb, var(--red-form-color-primary) 40%, white 60%);
   background: var(--red-form-color-background);
-  border-radius: 12px;
-  padding: 32px 40px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow:
+    0 1px 3px var(--red-form-color-shadow),
+    0 1px 2px var(--red-form-color-shadow-md);
+  border: 1px solid var(--red-form-color-border);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: var(--red-form-color-text);
   box-sizing: border-box;
-  /* filter: invert(1); */
+  transition: box-shadow 0.2s ease;
 }
 
 .red-form-title {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 1.875rem;
+  font-weight: 600;
   margin-bottom: 8px;
   color: var(--red-form-color-text);
-  letter-spacing: -0.01em;
-  text-transform: capitalize;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
 .red-form-description {
@@ -103,7 +110,9 @@
   white-space: nowrap;
   opacity: 1;
   pointer-events: none;
-  transition: opacity 0.4s ease, transform 0.3s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.3s ease;
   z-index: 50;
   box-shadow: none;
 }
@@ -135,64 +144,96 @@
 } */
 
 .red-form-input-label {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--red-form-color-text);
-  letter-spacing: 0.01em;
-  text-transform: capitalize;
+  letter-spacing: 0;
+  margin-bottom: 2px;
 }
 
 .red-form-input-base {
-  min-height: 48px;
-  background: color-mix(in srgb, var(--red-form-color-background) 90%, white 10%);
-  border: 1px solid color-mix(in srgb, var(--red-form-color-background) 90%, black 10%);
+  min-height: 44px;
+  background: var(--red-form-color-background);
+  border: 1.5px solid var(--red-form-color-border);
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   display: flex;
-  justify-items: center;
+  align-items: center;
   color: var(--red-form-color-text);
   position: relative;
 }
 
 .red-form-input-base-shadow {
-  box-shadow: 0px 2px 0px color-mix(in srgb, var(--red-form-color-primary), transparent 80%);
+  box-shadow: 0 1px 2px var(--red-form-color-shadow);
 }
 
 .red-form-input-base:hover {
-  background: var(--red-form-color-background);
-  border-color: #cbd5e1;
-  color: var(--red-form-color-text);
+  border-color: var(--red-form-color-text-secondary);
 }
 
 .red-form-input-base:focus-within {
-  background: var(--red-form-color-background);
-  border-color: var(--red-form-color-primary);
-  box-shadow: 0 0 0 3px var(--red-form-color-shadow);
-  color: var(--red-form-color-text);
+  border-color: var(--red-form-color-border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
 }
 
 .red-form-input {
   width: 100%;
-  font-size: large;
-  border: 12px solid transparent;
+  font-size: 0.9375rem;
+  padding: 10px 14px;
+  border: none;
   outline: none;
   background: transparent;
   flex-grow: 1;
-  /* color: inherit; */
+  color: var(--red-form-color-text);
+  line-height: 1.5;
+}
+
+/* Remove default search field icons */
+.red-form-input[type="search"]::-webkit-search-decoration,
+.red-form-input[type="search"]::-webkit-search-cancel-button,
+.red-form-input[type="search"]::-webkit-search-results-button,
+.red-form-input[type="search"]::-webkit-search-results-decoration {
+  display: none;
 }
 
 .red-form-password-container {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
   width: 100%;
+  position: relative;
 }
 
 .red-form-password-eye-icon {
-  padding-inline: 12px;
-  font-size: 16px;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
   user-select: none;
+  color: var(--red-form-color-text-secondary);
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  z-index: 10;
+}
+
+.red-form-password-eye-icon:hover {
+  color: var(--red-form-color-text);
+  background: var(--red-form-color-disabled);
+}
+
+.red-form-password-eye-icon:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.red-form-password-eye-icon svg {
+  display: block;
 }
 
 .active {
@@ -203,6 +244,11 @@
   color: var(--red-form-color-text-inactive);
 }
 
+.red-form-password-container input[type="password"],
+.red-form-password-container input[type="text"] {
+  padding-right: 48px;
+}
+
 .red-form-textarea {
   padding: 12px;
   resize: vertical;
@@ -210,9 +256,10 @@
 }
 
 .red-form-helper-text {
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   color: var(--red-form-color-text-secondary);
-  margin-top: 2px;
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
 .red-form-action-area {
@@ -224,33 +271,37 @@
 }
 
 .red-form-button {
-  padding: 12px 28px;
+  padding: 11px 24px;
   border: none;
   font-weight: 500;
-  font-size: 0.95rem;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 6px color-mix(in srgb, var(--red-form-color-primary), transparent 80%);
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
   cursor: pointer;
   border-radius: 8px;
-  filter: saturate(1.2);
-  text-transform: capitalize;
+  line-height: 1.5;
+  font-family: inherit;
 }
 
 .red-form-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--red-form-color-primary), transparent 70%);
-  filter: saturate(1.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--red-form-color-shadow-md);
 }
 
 .red-form-button:active {
   transform: translateY(0);
-  box-shadow: 0 0px 0px color-mix(in srgb, var(--red-form-color-primary), transparent 100%);
-  filter: saturate(1) brightness(0.8);
+  box-shadow: 0 1px 2px var(--red-form-color-shadow);
 }
 
 .red-form-submit-button {
-  background: linear-gradient(120deg, var(--red-form-color-primary), color-mix(in srgb, var(--red-form-color-primary) 70%, white 30%));
-  color: var(--red-form-color-background);
+  background: var(--red-form-color-primary);
+  color: white;
+  box-shadow:
+    0 1px 3px var(--red-form-color-shadow),
+    0 1px 2px var(--red-form-color-shadow-md);
+}
+
+.red-form-submit-button:hover {
+  background: var(--red-form-color-primary-hover);
 }
 
 /* .red-form-submit-button:hover {
@@ -271,30 +322,42 @@
 }
 
 .red-form-reset-button {
-  cursor: pointer;
-  padding: 12px 28px;
-  border: none;
+  padding: 11px 24px;
+  border: 1.5px solid var(--red-form-color-border);
   border-radius: 8px;
-  color: var(--red-form-color-primary);
+  color: var(--red-form-color-text);
   background: var(--red-form-color-background);
-  border: var(--red-form-color-primary) solid 0.5px;
   font-weight: 500;
-  font-size: 0.95rem;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 6px var(--red-form-color-shadow);
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 2px var(--red-form-color-shadow);
+}
+
+.red-form-reset-button:hover {
+  border-color: var(--red-form-color-text-secondary);
+  background: var(--red-form-color-disabled);
 }
 
 .red-form-delete-button {
-  cursor: pointer;
-  padding: 12px 28px;
+  padding: 11px 24px;
   border: none;
   border-radius: 8px;
-  color: var(--red-form-color-background);
+  color: white;
   background: var(--red-form-color-error);
   font-weight: 500;
-  font-size: 0.95rem;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 6px var(--red-form-color-shadow);
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow:
+    0 1px 3px var(--red-form-color-shadow),
+    0 1px 2px var(--red-form-color-shadow-md);
+}
+
+.red-form-delete-button:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
 /* 🔹 Responsive Layout */
@@ -703,23 +766,32 @@ input[type="number"]::-webkit-outer-spin-button {
   width: 100%;
   background: var(--red-form-color-background);
   position: absolute;
-  top: 58px;
+  top: 100%;
+  left: 0;
   z-index: 30;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--red-form-color-border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 250px;
+  overflow-y: auto;
 }
 
 .red-form-search-field-nav-arrow {
   position: absolute;
-  top: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   right: 12px;
   font-size: 16px;
-  background: var(--red-form-color-background);
   color: var(--red-form-color-text-secondary);
+  pointer-events: none;
 }
 
 .suggestion-item {
-  padding: 8px;
+  padding: 10px 12px;
   cursor: pointer;
-  text-transform: uppercase;
 }
 
 .suggestion-item.active,
@@ -788,16 +860,17 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .red-form-error-shadow {
-  box-shadow: 0px 4px 8px color-mix(in srgb, var(--red-form-color-error), transparent 80%);
+  box-shadow: 0 0 0 3px var(--red-form-color-error-bg);
 }
 
 .red-form-error-border {
-  border: 1px solid var(--red-form-color-error);
+  border-color: var(--red-form-color-error) !important;
 }
 
 .red-form-error-list {
-  text-transform: capitalize;
-  font-size: 12px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--red-form-color-error);
 }
 
 input[type="range"]::-moz-range-thumb {

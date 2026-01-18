@@ -4,7 +4,10 @@
       "path": "red-form"
     },
     {
-      "path": "../crudios/crudios-frontend"
+      "path": "test"
+    }
+    {
+      "path": "."
     }
   ],
   "settings": {}

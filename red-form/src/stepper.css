@@ -1,0 +1,181 @@
+/* ========================================
+   🔹 STEPPER FORM STYLES
+   ======================================== */
+
+.red-form-stepper-container {
+  display: block;
+  width: 100%;
+  background: var(--red-form-color-background);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow:
+    0 1px 3px var(--red-form-color-shadow),
+    0 1px 2px var(--red-form-color-shadow-md);
+  border: 1px solid var(--red-form-color-border);
+  box-sizing: border-box;
+}
+
+/* Step Indicator */
+.red-form-stepper-indicator {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.red-form-stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.red-form-stepper-step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--red-form-color-disabled);
+  border: 2px solid var(--red-form-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--red-form-color-text-secondary);
+  transition: all 0.3s ease;
+  z-index: 2;
+  position: relative;
+}
+
+.red-form-stepper-step.active .red-form-stepper-step-circle {
+  background: var(--red-form-color-primary);
+  border-color: var(--red-form-color-primary);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  transform: scale(1.1);
+}
+
+.red-form-stepper-step.completed .red-form-stepper-step-circle {
+  background: var(--red-form-color-primary);
+  border-color: var(--red-form-color-primary);
+  color: white;
+}
+
+.red-form-stepper-check {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.red-form-stepper-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red-form-color-text-secondary);
+}
+
+.red-form-stepper-step.active .red-form-stepper-dot {
+  background: white;
+}
+
+.red-form-stepper-step-label {
+  margin-top: 12px;
+  text-align: center;
+  max-width: 150px;
+}
+
+.red-form-stepper-step-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--red-form-color-text-secondary);
+  transition: color 0.3s ease;
+}
+
+.red-form-stepper-step.active .red-form-stepper-step-title {
+  color: var(--red-form-color-primary);
+  font-weight: 600;
+}
+
+.red-form-stepper-step.completed .red-form-stepper-step-title {
+  color: var(--red-form-color-text);
+}
+
+.red-form-stepper-step-description {
+  font-size: 0.75rem;
+  color: var(--red-form-color-text-inactive);
+  margin-top: 4px;
+}
+
+/* Connector Line */
+.red-form-stepper-connector {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--red-form-color-border);
+  z-index: 1;
+  transition: background 0.3s ease;
+}
+
+.red-form-stepper-step.completed .red-form-stepper-connector {
+  background: var(--red-form-color-primary);
+}
+
+/* Content Area */
+.red-form-stepper-content {
+  margin-bottom: 24px;
+}
+
+/* Navigation */
+.red-form-stepper-navigation {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--red-form-color-border);
+}
+
+/* Progress Bar */
+.red-form-stepper-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--red-form-color-disabled);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 32px;
+}
+
+.red-form-stepper-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--red-form-color-primary), var(--red-form-color-primary-hover));
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .red-form-stepper-indicator {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .red-form-stepper-step {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .red-form-stepper-step-label {
+    margin-top: 0;
+    margin-left: 16px;
+    text-align: left;
+    max-width: none;
+  }
+
+  .red-form-stepper-connector {
+    display: none;
+  }
+}

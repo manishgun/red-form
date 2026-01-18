@@ -179,7 +179,6 @@ export type MultiSelectFieldProps = BaseField & {
 export type TagsFieldProps = BaseField & {
   component: "tags";
   value: string[];
-  options: Option[];
 };
 
 export type ImageFieldProps = BaseField & {
@@ -241,7 +240,7 @@ export type Values<T extends Schema> = {
 type ValidateOnType = ("submit" | "change" | "blur" | "active")[];
 
 export type FormSX = {
-  conteiner?: CSSProperties;
+  container?: CSSProperties;
   title?: CSSProperties;
   description?: CSSProperties;
   form?: CSSProperties;
@@ -363,3 +362,31 @@ export interface FormInstance<T extends Schema> {
     onMouseDown: (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   };
 }
+
+// StepperForm type declarations
+export type StepConfig<T extends Schema> = {
+  label: string;
+  description?: string;
+  schema: T;
+  optional?: boolean;
+};
+
+export type StepperFormProps<T extends Schema[]> = {
+  steps: { [K in keyof T]: StepConfig<T[K]> };
+  title?: string;
+  description?: string;
+  onComplete: (values: { [K in keyof T]: Values<T[K]> }) => void | Promise<void>;
+  onStepChange?: (step: number) => void;
+  options?: {
+    showStepNumbers?: boolean;
+    allowSkip?: boolean;
+    validateOnNext?: boolean;
+    buttons?: {
+      next?: string;
+      previous?: string;
+      complete?: string;
+      skip?: string;
+    };
+  };
+  sx?: FormSX;
+};
