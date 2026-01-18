@@ -9,7 +9,7 @@ export type ModalProps = {
   height?: number;
   minHeight?: number;
 };
-export type Adorment = {
+export type Adornment = {
   start: ReactNode | undefined;
   end: ReactNode | undefined;
 };
@@ -19,134 +19,134 @@ export type Option = string | { label: string; value: string | number };
 export type InputProps<T extends Schema, K extends keyof T> = { field: string; props: T[K]; form: FormInstance<T>; error: string[] | undefined; sx: FormSX };
 
 export type BaseField = {
-  label: string;
-  required?: boolean;
-  placeholder?: string;
-  helperText?: ReactNode;
-  information?: string;
-  disabled?: boolean;
-  span?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+  label: string | ((form: FormInstance<any>) => string);
+  required?: boolean | ((form: FormInstance<any>) => boolean);
+  placeholder?: string | ((form: FormInstance<any>) => string);
+  helperText?: ReactNode | ((form: FormInstance<any>) => ReactNode);
+  information?: string | ((form: FormInstance<any>) => string);
+  disabled?: boolean | ((form: FormInstance<any>) => boolean);
+  span?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | ((form: FormInstance<any>) => 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12);
   validate?: <T extends Schema, K extends keyof T>({ field, props, form }: { field: string; props: T[K]; form: FormInstance<T> }) => string[];
-  hidden?: boolean;
+  hidden?: boolean | ((form: FormInstance<any>) => boolean);
 };
 
 export type TextFieldProps = BaseField & {
   component: "text";
   value: string;
   autoFill?: AutoFillField;
-  min?: number;
-  max?: number;
-  adorment?: Adorment;
+  min?: number | ((form: FormInstance<any>) => number);
+  max?: number | ((form: FormInstance<any>) => number);
+  adornment?: Adornment;
 };
 
 export type EmailFieldProps = BaseField & {
   component: "email";
   value: string;
-  adorment?: Adorment;
+  adornment?: Adornment;
 };
 
 export type SearchFieldProps = BaseField & {
   component: "search";
   value: string | number;
   autoFill?: AutoFillField;
-  options: Option[];
+  options: Option[] | ((form: FormInstance<any>) => Option[]);
   reloadOptions?: boolean;
-  adorment?: Adorment;
+  adornment?: Adornment;
 };
 
 export type NumberFieldProps = BaseField & {
   component: "number";
   value: number | "";
-  min?: number;
-  max?: number;
-  step?: number;
-  fraction?: number;
-  adorment?: Adorment;
+  min?: number | ((form: FormInstance<any>) => number);
+  max?: number | ((form: FormInstance<any>) => number);
+  step?: number | ((form: FormInstance<any>) => number);
+  fraction?: number | ((form: FormInstance<any>) => number);
+  adornment?: Adornment;
 };
 
 export type PasswordFieldProps = BaseField & {
   component: "password";
   value: string;
-  min?: number;
-  max?: number;
-  adorment?: Adorment;
+  min?: number | ((form: FormInstance<any>) => number);
+  max?: number | ((form: FormInstance<any>) => number);
+  adornment?: Adornment;
 };
 
 export type DateFieldProps = BaseField & {
   component: "date";
   value: `${1 | 2}${number}${number}${number}-${0 | 1}${number}-${0 | 1 | 2 | 3}${number}` | "";
-  min?: string;
-  max?: string;
-  adorment?: Adorment;
+  min?: string | ((form: FormInstance<any>) => string);
+  max?: string | ((form: FormInstance<any>) => string);
+  adornment?: Adornment;
 };
 
 export type DateTimeFieldProps = BaseField & {
   component: "datetime";
   value: `${1 | 2}${number}${number}${number}-${0 | 1}${number}-${0 | 1 | 2 | 3}${number}T${0 | 1 | 2}${number}:${0 | 1 | 2 | 3 | 4 | 5 | 6}${number}` | "";
-  min?: string;
-  max?: string;
-  adorment?: Adorment;
+  min?: string | ((form: FormInstance<any>) => string);
+  max?: string | ((form: FormInstance<any>) => string);
+  adornment?: Adornment;
 };
 
 export type TimeFieldProps = BaseField & {
   component: "time";
   value: `${0 | 1 | 2}${number}:${0 | 1 | 2 | 3 | 4 | 5 | 6}${number}` | "";
-  min?: string;
-  max?: string;
-  adorment?: Adorment;
+  min?: string | ((form: FormInstance<any>) => string);
+  max?: string | ((form: FormInstance<any>) => string);
+  adornment?: Adornment;
 };
 
 export type WeekFieldProps = BaseField & {
   component: "week";
   value: `${number}${number}${number}${number}-W${number}${number}` | "";
-  min?: number;
-  max?: number;
-  adorment?: Adorment;
+  min?: number | ((form: FormInstance<any>) => number);
+  max?: number | ((form: FormInstance<any>) => number);
+  adornment?: Adornment;
 };
 
 export type MonthFieldProps = BaseField & {
   component: "month";
   value: `${1 | 2}${number}${number}${number}-${0 | 1}${number}` | "";
-  min?: number;
-  max?: number;
-  adorment?: Adorment;
+  min?: number | ((form: FormInstance<any>) => number);
+  max?: number | ((form: FormInstance<any>) => number);
+  adornment?: Adornment;
 };
 
 export type TelephoneFieldProps = BaseField & {
   component: "telephone";
   value: number;
-  min?: number;
-  max?: number;
-  adorment?: Adorment;
+  min?: number | ((form: FormInstance<any>) => number);
+  max?: number | ((form: FormInstance<any>) => number);
+  adornment?: Adornment;
 };
 
 export type TextAreaFieldProps = BaseField & {
   component: "textarea";
   value: string;
-  min?: number;
-  max?: number;
+  min?: number | ((form: FormInstance<any>) => number);
+  max?: number | ((form: FormInstance<any>) => number);
 };
 
 export type CheckboxFieldProps = BaseField & {
   component: "checkbox";
   value: string[] | string | undefined;
   direction?: "row" | "column";
-  options: (string | { label: string; value: string })[];
+  options: (string | { label: string; value: string })[] | ((form: FormInstance<any>) => (string | { label: string; value: string })[]);
 };
 
 export type RadioFieldProps = BaseField & {
   component: "radio";
   value: string | number;
   direction?: "row" | "column";
-  options: Option[];
+  options: Option[] | ((form: FormInstance<any>) => Option[]);
 };
 
 export type RangeFieldProps = BaseField & {
   component: "range";
   value: number;
-  min: number;
-  max: number;
-  step?: number;
+  min: number | ((form: FormInstance<any>) => number);
+  max: number | ((form: FormInstance<any>) => number);
+  step?: number | ((form: FormInstance<any>) => number);
 };
 
 export type ColorFieldProps = BaseField & {
@@ -162,7 +162,7 @@ export type SwitchFieldProps = BaseField & {
 export type SelectFieldProps = BaseField & {
   component: "select";
   value: string | number;
-  options: Option[];
+  options: Option[] | ((form: FormInstance<any>) => Option[]);
 };
 
 interface MultiSelectFieldOnClickProps<T extends Schema, K extends keyof T> extends InputProps<T, K> {
@@ -172,7 +172,7 @@ interface MultiSelectFieldOnClickProps<T extends Schema, K extends keyof T> exte
 export type MultiSelectFieldProps = BaseField & {
   component: "multi-select";
   value: string[];
-  options: Option[];
+  options: Option[] | ((form: FormInstance<any>) => Option[]);
   onClick?: <T extends Schema, K extends keyof T>({ field, props, form, item }: MultiSelectFieldOnClickProps<T, K>) => void;
 };
 
@@ -329,13 +329,13 @@ export interface FormInstance<T extends Schema> {
   touched: Touched<T>;
   setFieldTouched: <K extends keyof T>(field: K, value: boolean) => void;
   setTouched: Dispatch<SetStateAction<Partial<Record<keyof T, boolean>>>>;
-  handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+  handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 
   activeField: keyof T | undefined;
   setFieldActive: <K extends keyof T>(field: K | undefined) => void;
-  handleFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
+  handleFocus: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 
   handleSubmit: (e: React.FormEvent) => void;
   validate: () => boolean;
@@ -353,7 +353,7 @@ export interface FormInstance<T extends Schema> {
     id: K;
     required: boolean;
     disabled: boolean;
-    ref: React.RefObject<HTMLInputElement | null> | undefined;
+    ref: any;
     placeholder: string | undefined;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     autoComplete: AutoFill | undefined;

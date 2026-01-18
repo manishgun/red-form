@@ -146,6 +146,7 @@ function App() {
         title="Feature Playground"
         description="Try out various form fields and production-grade UI."
         onSubmit={(values) => console.log("Features:", values)}
+        options={{ validateOn: ["submit"] }}
       />
     ),
     ecommerce: (

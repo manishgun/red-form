@@ -35,7 +35,7 @@ You get **developer clarity**, **instant layout**, and **zero boilerplate**.
 - 🧩 **Extensible** – inject custom components and validation logic
 - 🚀 **Optimized** – minimal re-renders, built for scalability
 - 💡 **Declarative logic** – dynamic visibility and conditional rendering
-- 🪶 **Extremely Lightweight** – 56kb package saves hours of development
+- 🪶 **Extremely Lightweight** – 80kb package saves hours of development
 - 🪲 **Low Code** – less code means fewer bugs
 - ✅ **Built-in Validation** – email, password, phone, date, and custom validators
 - 🎯 **20+ Field Types** – text, email, password, select, multi-select, tags, date, time, image, and more

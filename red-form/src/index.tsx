@@ -1,4 +1,4 @@
-import {
+import type {
   Errors,
   FormContextProps,
   FormInstance,
@@ -11,25 +11,23 @@ import {
   FormOptions,
   FormSX,
   StepConfig,
-  StepperFormProps
+  StepperFormProps,
+  TextFieldProps,
+  TextAreaFieldProps,
+  EmailFieldProps,
+  PasswordFieldProps,
+  NumberFieldProps,
+  TelephoneFieldProps
 } from "./declarations";
 import React, { createContext, Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 
-// function injectCss(path: string) {
-//   if (typeof document !== "undefined") {
-//     const link = document.createElement("link");
-//     link.rel = "stylesheet";
-//     link.href = path;
-//     document.head.appendChild(link);
-//   }
-// }
+const isPromise = (result: any): result is Promise<any> => {
+  return !!result && typeof result.then === "function";
+};
 
-// injectCss(new URL("./index.css", import.meta.url).toString());
-
-const isPromise = (result: any) => {
-  if (typeof result === "object" && typeof result.then === "function" && typeof result.catch === "function" && typeof result.finally === "function") return true;
-  else return false;
+const val = <T,>(value: T | ((form: any) => T), form: any): T => {
+  return typeof value === "function" ? (value as (form: any) => T)(form) : value;
 };
 
 const FormContext = createContext<FormContextProps>({
@@ -40,7 +38,7 @@ const FormContext = createContext<FormContextProps>({
 });
 
 export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) => void | Promise<void>, options?: FormOptions): FormInstance<T> {
-  const ref = useRef<HTMLInputElement>(null);
+  const ref = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const [values, setValues] = useState<Values<T>>({} as Values<T>);
   const [errors, setErrors] = useState<Errors<T>>({});
   const [schema, setSchema] = useState<T>(s);
@@ -112,9 +110,9 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
     id: key,
     // value: typeof values[key] === "number" ? values[key] : values[key] ? values[key].toString() : "",
     value: values[key] === undefined || values[key] === null ? "" : values[key],
-    required: false, //schema[key]["required"] ? true : false,
-    disabled: schema[key]["disabled"] ? true : false,
-    placeholder: schema[key]["placeholder"],
+    required: val(schema[key]["required"], form) ? true : false,
+    disabled: val(schema[key]["disabled"], form) ? true : false,
+    placeholder: val(schema[key]["placeholder"], form),
     autoComplete: schema[key]["component"] === "text" ? (schema[key]["autoFill"] ? schema[key]["autoFill"] : undefined) : undefined,
     onChange: handleChange,
     onBlur: handleBlur,
@@ -134,16 +132,19 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
       if (validating === false) setValidating(true);
     }
 
-    if (field.disabled || field.hidden) return fieldErrors;
+    if (val(field.disabled, form) || val(field.hidden, form)) return fieldErrors;
     if (field.validate) field.validate({ field: key as string, props: field, form }).forEach(error => fieldErrors.push(error));
     else {
-      if (field.required && (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
+      if (val(field.required, form) && (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
         fieldErrors.push(`Field is required.`);
       } else if (!(value === undefined || value === "" || (Array.isArray(value) && value.length === 0))) {
         // Text and Textarea validation
         if (field.component === "text" || field.component === "textarea") {
-          if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Field length must be less than or equal to ${field.max}.`);
-          if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Field length must be more than or equal to ${field.min}.`);
+          const props = field as TextFieldProps | TextAreaFieldProps;
+          const max = val(props.max, form);
+          const min = val(props.min, form);
+          if (max !== undefined && (value as string).length > max) fieldErrors.push(`Field length must be less than or equal to ${max}.`);
+          if (min !== undefined && (value as string).length < min) fieldErrors.push(`Field length must be more than or equal to ${min}.`);
         }
 
         // Email validation
@@ -156,27 +157,39 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
 
         // Password validation
         if (field.component === "password") {
-          if (field.max !== undefined && (value as string).length > field.max) fieldErrors.push(`Password length must be less than or equal to ${field.max}.`);
-          if (field.min !== undefined && (value as string).length < field.min) fieldErrors.push(`Password must be at least ${field.min} characters.`);
+          const props = field as PasswordFieldProps;
+          const max = val(props.max, form);
+          const min = val(props.min, form);
+          if (max !== undefined && (value as string).length > max) fieldErrors.push(`Password length must be less than or equal to ${max}.`);
+          if (min !== undefined && (value as string).length < min) fieldErrors.push(`Password must be at least ${min} characters.`);
         }
 
         // Number and Range validation
         if (field.component === "range" || field.component === "number") {
-          if (field.max !== undefined && (value as number) > field.max) fieldErrors.push(`Field value must be less than or equal to ${field.max}.`);
-          if (field.min !== undefined && (value as number) < field.min) fieldErrors.push(`Field value must be more than or equal to ${field.min}.`);
+          const props = field as NumberFieldProps;
+          const max = val(props.max, form);
+          const min = val(props.min, form);
+          if (max !== undefined && (value as number) > max) fieldErrors.push(`Field value must be less than or equal to ${max}.`);
+          if (min !== undefined && (value as number) < min) fieldErrors.push(`Field value must be more than or equal to ${min}.`);
         }
 
         // Telephone validation
         if (field.component === "telephone") {
+          const props = field as TelephoneFieldProps;
           const phoneStr = String(value);
-          if (field.max !== undefined && phoneStr.length > field.max) fieldErrors.push(`Phone number must be less than or equal to ${field.max} digits.`);
-          if (field.min !== undefined && phoneStr.length < field.min) fieldErrors.push(`Phone number must be at least ${field.min} digits.`);
+          const max = val(props.max, form);
+          const min = val(props.min, form);
+          if (max !== undefined && phoneStr.length > max) fieldErrors.push(`Phone number must be less than or equal to ${max} digits.`);
+          if (min !== undefined && phoneStr.length < min) fieldErrors.push(`Phone number must be at least ${min} digits.`);
         }
 
         // Date validation
         if (field.component === "date" || field.component === "datetime" || field.component === "time") {
-          if (field.min !== undefined && value < field.min) fieldErrors.push(`Date must be after ${field.min}.`);
-          if (field.max !== undefined && value > field.max) fieldErrors.push(`Date must be before ${field.max}.`);
+          const props = field as any;
+          const max = val(props.max, form);
+          const min = val(props.min, form);
+          if (min !== undefined && value < min) fieldErrors.push(`Date must be after ${min}.`);
+          if (max !== undefined && value > max) fieldErrors.push(`Date must be before ${max}.`);
         }
       }
     }
@@ -297,22 +310,6 @@ export function useForm<T extends Schema>(s: T, onSubmit: (values: Values<T>) =>
   }, []);
 
   useEffect(() => {
-    // const fields = Object.keys(s);
-
-    // const common_funtional_props_fields = ["disabled", "helperText", "hidden", "label", "placeholder", "required", "span"] as const;
-
-    // const schema = fields.reduce((previous, current) => {
-    //   const field = s[current];
-    //   common_funtional_props_fields.forEach(key => {
-    //     // @ts-ignore
-    //     if (typeof field[key] === "function") field[key] = field[key]({ field: current, props: field, form });
-    //   });
-
-    //   previous[current] = field
-
-    //   return previous;
-    // }, {} as T);
-
     setSchema(s);
   }, [s]);
 
@@ -380,10 +377,10 @@ const Form = <T extends Schema>({
       )}
       <div className="red-form" style={{ ...sx.form }}>
         {(Object.entries(schema) as [string, T[keyof T]][]).map(([field, props]) => {
-          const is_disabled = Boolean(disabled) || Boolean(props.disabled) || Boolean(props.hidden);
+          const is_disabled = Boolean(disabled) || Boolean(val(props.disabled, form)) || Boolean(val(props.hidden, form));
           return (
             <Fragment key={field as string}>
-              {!props.hidden && <InputContainer field={field} props={{ ...props, disabled: is_disabled }} form={form} sx={sx} options={options} />}
+              {!val(props.hidden, form) && <InputContainer field={field} props={{ ...props, disabled: is_disabled }} form={form} sx={sx} options={options} />}
             </Fragment>
           );
         })}
@@ -445,9 +442,15 @@ const InputContainer = <T extends Schema, K extends keyof T>({
 }) => {
   const [position, setPosition] = useState<{ x: number; y: number }>();
   const error = form.errors[field];
+  const evaluatedSpan = val(props.span, form);
+  const evaluatedLabel = val(props.label, form);
+  const evaluatedRequired = val(props.required, form);
+  const evaluatedInformation = val(props.information, form);
+  const evaluatedHelperText = val(props.helperText, form);
+
   const style = useMemo(() => {
-    return { gridColumn: props.span ? `span ${props.span}` : undefined, cursor: props.disabled ? "not-allowed" : undefined, ...sx.inputContainer };
-  }, [props.span, props.disabled]);
+    return { gridColumn: evaluatedSpan ? `span ${evaluatedSpan}` : undefined, cursor: props.disabled ? "not-allowed" : undefined, ...sx.inputContainer };
+  }, [evaluatedSpan, props.disabled]);
 
   if (props.component === "custom" && !props.inputBase) {
     return (
@@ -463,9 +466,9 @@ const InputContainer = <T extends Schema, K extends keyof T>({
     <div className={`red-form-input-container ${error ? "red-form-error" : ""}`} style={style}>
       <div className="red-form-input-label-container" style={{ ...sx.inputLabelContainer }}>
         <label className={`red-form-input-label ${error ? "red-form-error" : ""}`} htmlFor={field as string} style={{ ...sx.inputLabel }}>
-          {props.label} <span className="red-form-error">{props.required && !props.disabled && "*"}</span>
+          {evaluatedLabel} <span className="red-form-error">{evaluatedRequired && !props.disabled && "*"}</span>
         </label>
-        {props.information && !props.disabled && (
+        {evaluatedInformation && !props.disabled && (
           <div
             className="red-form-tooltip-container"
             style={{ ...sx.tooltipContainer }}
@@ -486,7 +489,7 @@ const InputContainer = <T extends Schema, K extends keyof T>({
             )}
             {position && (
               <div className="red-form-tooltip" style={{ ...sx.tooltip, top: position.y, left: position.x }}>
-                {props.information}
+                {evaluatedInformation}
               </div>
             )}
           </div>
@@ -506,9 +509,9 @@ const InputContainer = <T extends Schema, K extends keyof T>({
           </ul>
         ) : (
           <>
-            {props.helperText !== undefined && (
+            {evaluatedHelperText !== undefined && (
               <p className={`red-form-helper-text ${error ? "red-form-error" : ""}`} style={{ ...sx.helperText }}>
-                {props.helperText}
+                {evaluatedHelperText}
               </p>
             )}
           </>
@@ -541,11 +544,9 @@ const InputBase = <T extends Schema, K extends keyof T>(properties: InputProps<T
       className={`red-form-input-base ${properties.props.disabled ? "" : `${properties.error ? "red-form-error red-form-error-shadow" : "red-form-input-base-shadow"}`}`}
       style={{ ...properties.sx.inputBase }}
     >
-      {/* @ts-ignore */}
-      {properties.props.adorment && properties.props.adorment.start && <>{properties.props.adorment.start}</>}
+      {(properties.props as any).adornment && (properties.props as any).adornment.start && <>{(properties.props as any).adornment.start}</>}
       <InputField {...properties} />
-      {/* @ts-ignore */}
-      {properties.props.adorment && properties.props.adorment.end && <>{properties.props.adorment.end}</>}
+      {(properties.props as any).adornment && (properties.props as any).adornment.end && <>{(properties.props as any).adornment.end}</>}
     </div>
   );
 };
@@ -601,7 +602,15 @@ const CustomField = <T extends Schema, K extends keyof T>({ field, props, form, 
 
 const TextField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "text") return null;
-  return <input type="text" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  return (
+    <input
+      type="text"
+      className={`red-form-input ${error ? "red-form-error" : ""}`}
+      {...form.getFieldProps(field as string)}
+      minLength={val(props.min, form)}
+      maxLength={val(props.max, form)}
+    />
+  );
 };
 
 const EmailField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
@@ -612,7 +621,15 @@ const EmailField = <T extends Schema, K extends keyof T>({ field, props, form, e
 const TelephoneField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "telephone") return null;
 
-  return <input type="tel" {...form.getFieldProps(field as string)} className={`red-form-input ${error ? "red-form-error" : ""}`} />;
+  return (
+    <input
+      type="tel"
+      {...form.getFieldProps(field as string)}
+      className={`red-form-input ${error ? "red-form-error" : ""}`}
+      minLength={val(props.min, form)}
+      maxLength={val(props.max, form)}
+    />
+  );
 };
 
 const PasswordField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
@@ -626,6 +643,8 @@ const PasswordField = <T extends Schema, K extends keyof T>({ field, props, form
         autoComplete="current-password"
         type={show && !form.submitting ? "text" : "password"}
         className={`red-form-input ${error ? "red-form-error" : ""}`}
+        minLength={val(props.min, form)}
+        maxLength={val(props.max, form)}
       />
       <input
         name="password"
@@ -691,20 +710,25 @@ const PasswordField = <T extends Schema, K extends keyof T>({ field, props, form
 const NumberField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "number") return null;
 
+  const min = val(props.min, form);
+  const max = val(props.max, form);
+  const step = val(props.step, form);
+  const fraction = val(props.fraction, form);
+
   return (
     <input
       type="number"
       {...form.getFieldProps(field as string)}
-      min={props.min}
-      max={props.max}
-      step={props.step}
+      min={min}
+      max={max}
+      step={step}
       className={`red-form-input ${error ? "red-form-error" : ""}`}
       onChange={e => {
-        let val = parseFloat(e.target.value);
-        if (isNaN(val)) form.setFieldValue(field, "");
+        let val_num = parseFloat(e.target.value);
+        if (isNaN(val_num)) form.setFieldValue(field, "");
         else {
-          if (typeof props.fraction === "number") val = Number(val.toFixed(props.fraction));
-          form.setFieldValue(field, val);
+          if (typeof fraction === "number") val_num = Number(val_num.toFixed(fraction));
+          form.setFieldValue(field, val_num);
         }
       }}
     />
@@ -713,33 +737,70 @@ const NumberField = <T extends Schema, K extends keyof T>({ field, props, form, 
 
 const DateField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "date") return null;
-  return <input type="date" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  return (
+    <input
+      type="date"
+      className={`red-form-input ${error ? "red-form-error" : ""}`}
+      {...form.getFieldProps(field as string)}
+      min={val(props.min, form)}
+      max={val(props.max, form)}
+    />
+  );
 };
 
 const TimeField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "time") return null;
-  return <input type="time" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  return (
+    <input
+      type="time"
+      className={`red-form-input ${error ? "red-form-error" : ""}`}
+      {...form.getFieldProps(field as string)}
+      min={val(props.min, form)}
+      max={val(props.max, form)}
+    />
+  );
 };
 
 const WeekField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "week") return null;
-  return <input type="week" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  return (
+    <input
+      type="week"
+      className={`red-form-input ${error ? "red-form-error" : ""}`}
+      {...form.getFieldProps(field as string)}
+      min={val(props.min, form)}
+      max={val(props.max, form)}
+    />
+  );
 };
 
 const MonthField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "month") return null;
-  return <input type="month" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  return (
+    <input
+      type="month"
+      className={`red-form-input ${error ? "red-form-error" : ""}`}
+      {...form.getFieldProps(field as string)}
+      min={val(props.min, form)}
+      max={val(props.max, form)}
+    />
+  );
 };
 
 const RangeField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "range") return null;
+
+  const min = val(props.min, form);
+  const max = val(props.max, form);
+  const step = val(props.step, form);
+
   return (
     <div className="red-form-range-field-container">
       <input
         type="range"
-        min={props.min}
-        max={props.max}
-        step={props.step}
+        min={min}
+        max={max}
+        step={step}
         className={`red-form-input red-form-range-field ${error ? "red-form-error" : ""}`}
         {...form.getFieldProps(field as string)}
       />
@@ -750,13 +811,27 @@ const RangeField = <T extends Schema, K extends keyof T>({ field, props, form, e
 
 const DateTimeField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "datetime") return null;
-  return <input type="datetime-local" className={`red-form-input ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  return (
+    <input
+      type="datetime-local"
+      className={`red-form-input ${error ? "red-form-error" : ""}`}
+      {...form.getFieldProps(field as string)}
+      min={val(props.min, form)}
+      max={val(props.max, form)}
+    />
+  );
 };
 
 const TextAreaField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "textarea") return null;
-  // @ts-ignore
-  return <textarea className={`red-form-input red-form-textarea ${error ? "red-form-error" : ""}`} {...form.getFieldProps(field as string)} />;
+  return (
+    <textarea
+      className={`red-form-input red-form-textarea ${error ? "red-form-error" : ""}`}
+      {...form.getFieldProps(field as string)}
+      minLength={val(props.min, form)}
+      maxLength={val(props.max, form)}
+    />
+  );
 };
 
 const ColorField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
@@ -773,8 +848,10 @@ const ColorField = <T extends Schema, K extends keyof T>({ field, props, form, e
 const SelectField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "select") return null;
 
+  const options = val(props.options, form);
+
   const map = useMemo(() => {
-    return props.options.reduce(
+    return options.reduce(
       (previous, current) => {
         if (typeof current === "string") {
           previous[current] = current;
@@ -786,23 +863,23 @@ const SelectField = <T extends Schema, K extends keyof T>({ field, props, form, 
       },
       {} as Record<string, string | number>
     );
-  }, [props.options]);
+  }, [options]);
 
   return (
     <select
       id={field as string}
       value={(form.values[field] as string) || ""}
       onChange={e => form.setFieldValue(field, map[e.target.value])}
-      className={`red-form-select-field ${props.disabled ? "red-form-select-field-disabled" : ""} ${error ? "red-form-error" : ""}`}
+      className={`red-form-select-field ${val(props.disabled, form) ? "red-form-select-field-disabled" : ""} ${error ? "red-form-error" : ""}`}
       onClick={() => {
         form.setFieldActive(field);
       }}
     >
       <option value={""} className="red-form-select-option">
-        Select {props.label}
+        Select {val(props.label, form)}
       </option>
 
-      {props.options.map(item => {
+      {options.map(item => {
         const label = typeof item === "string" ? item : item.label;
         const value = typeof item === "string" ? item : item.value;
         return (
@@ -817,9 +894,12 @@ const SelectField = <T extends Schema, K extends keyof T>({ field, props, form, 
 
 const CheckBoxField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "checkbox") return null;
+
+  const options = val(props.options, form);
+
   return (
-    <div className={`${props.direction === "column" ? "red-form-checkbox-base-column" : "red-form-checkbox-base-row"} ${error ? "red-form-error" : ""}`}>
-      {props.options.map((item, index) => {
+    <div className={`red-form-checkbox-field-container ${props.direction === "row" ? "red-form-checkbox-field-container-row" : ""}`}>
+      {options.map((item, index) => {
         const label = typeof item === "string" ? item : item.label;
         const value = typeof item === "string" ? item : item.value;
         return (
@@ -859,9 +939,12 @@ const CheckBoxField = <T extends Schema, K extends keyof T>({ field, props, form
 
 const RadioField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "radio") return null;
+
+  const options = val(props.options, form);
+
   return (
     <div className={`${props.direction === "column" ? "red-form-radio-base-column" : "red-form-radio-base-row"} ${error ? "red-form-error" : ""}`}>
-      {props.options.map((item, index) => {
+      {options.map((item, index) => {
         const label = typeof item === "string" ? item : item.label;
         const value = typeof item === "string" ? item : item.value;
 
@@ -906,7 +989,7 @@ const SwitchField = <T extends Schema, K extends keyof T>({ field, props, form, 
         {...form.getFieldProps(field as string)}
         value={""}
         checked={Boolean(form.values[field])}
-        disabled={props.disabled}
+        disabled={val(props.disabled, form)}
         onChange={e => {
           form.setFieldValue(field, e.target.checked);
         }}
@@ -920,17 +1003,18 @@ const SwitchField = <T extends Schema, K extends keyof T>({ field, props, form, 
 
 const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
   if (props.component !== "search") return null;
-  const [selected_index, set_selected_index] = useState(0);
-  const [input, setInput] = useState("");
-  const [show_suggestions, set_show_suggestions] = useState(false);
-  const [previous_label, set_previous_label] = useState("");
-  const [is_dirty, set_is_dirty] = useState(false);
+  const [input, setInput] = useState<string>("");
+  const [previous_label, set_previous_label] = useState<string>("");
+  const [is_dirty, set_is_dirty] = useState<boolean>(false);
+  const [selected_index, set_selected_index] = useState<number>(0);
+  const [show_suggestions, set_show_suggestions] = useState<boolean>(false);
 
   const value = form.values[field];
+  const options = val(props.options, form);
 
   const reInitialization = () => {
     if (value !== null && value !== undefined && value !== "" && input === "") {
-      const match = props.options.find(option => {
+      const match = options.find(option => {
         if (typeof option === "string") {
           return option === value;
         } else {
@@ -948,7 +1032,7 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
   };
 
   const exactMatch = () => {
-    const match = props.options.find(option => {
+    const match = options.find(option => {
       if (typeof option === "string") {
         return option === input;
       } else {
@@ -970,14 +1054,14 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
     } else if (value !== "") form.setFieldValue(field, "");
   };
 
-  useEffect(reInitialization, [value]);
+  useEffect(reInitialization, [value, options]);
 
   useEffect(() => {
     if (props.reloadOptions !== false) reInitialization();
-  }, [props.options]);
+  }, [options]);
 
   const filterd = useMemo(() => {
-    return props.options
+    return options
       .filter(option => {
         const value = input.toLowerCase();
         if (typeof option === "string") {
@@ -987,7 +1071,7 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
         }
       })
       .slice(0, 10);
-  }, [input, form.values[field], props.options]);
+  }, [input, form.values[field], options]);
 
   const show = Boolean(form.activeField === field && filterd.length > 0 && show_suggestions);
 
@@ -997,7 +1081,7 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
         type="search"
         {...form.getFieldProps(field)}
         autoComplete="off"
-        placeholder={props.placeholder || `Select ${props.label}`}
+        placeholder={val(props.placeholder, form) || `Select ${val(props.label, form)}`}
         value={input}
         className={`red-form-input ${error ? "red-form-error" : ""}`}
         onBlur={() => {
@@ -1086,13 +1170,15 @@ const SearchField = <T extends Schema, K extends keyof T>({ field, props, form, 
   );
 };
 
-const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, form, error }: InputProps<T, K>) => {
+const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, form, error, sx }: InputProps<T, K>) => {
   if (props.component !== "multi-select") return null;
   const [input, setInput] = useState("");
   const [selected_index, set_selected_index] = useState(0);
 
+  const options = val(props.options, form);
+
   const map = useMemo(() => {
-    return props.options.reduce(
+    return options.reduce(
       (previous, current) => {
         if (typeof current === "string") {
           previous[current] = current;
@@ -1103,7 +1189,7 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
       },
       {} as Record<string, string>
     );
-  }, [props.options]);
+  }, [options]);
 
   const values = useMemo(() => Object.keys(map), [map]);
 
@@ -1130,8 +1216,7 @@ const MultiSelectField = <T extends Schema, K extends keyof T>({ field, props, f
               key={item}
               onClick={() => {
                 if (typeof props.onClick === "function") {
-                  // @ts-ignore
-                  props.onClick({ field, props, form, error, item });
+                  props.onClick({ field, props, form, error, item, sx });
                 }
               }}
               style={{ cursor: typeof props.onClick === "function" ? "pointer" : "default" }}
@@ -1253,8 +1338,8 @@ const TagsField = <T extends Schema, K extends keyof T>({ field, props, form, er
             setInput("");
           } else setInput(e.target.value);
         }}
-        placeholder={props.placeholder}
-        disabled={props.disabled}
+        placeholder={val(props.placeholder, form)}
+        disabled={val(props.disabled, form)}
         onKeyDown={e => {
           if (e.key === "Enter") {
             e.preventDefault();
@@ -1303,7 +1388,7 @@ const ImageField = <T extends Schema, K extends keyof T>({ field, props, form, e
           <input
             type="file"
             {...form.getFieldProps(field as string)}
-            disabled={props.disabled}
+            disabled={val(props.disabled, form)}
             value={""}
             onChange={e => {
               if (e.target.files && e.target.files.length === 1) {

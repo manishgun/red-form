@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["src/index.tsx"],
-  format: ["esm", "cjs", "iife"], // output both module types
+  format: ["esm"], // output both module types
   dts: true, // generate type definitions
   sourcemap: false, // useful for debugging
   clean: true,
